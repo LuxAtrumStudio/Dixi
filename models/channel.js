@@ -15,7 +15,7 @@ var ChannelSchema = mongoose.Schema({
 });
 
 var Channel = module.exports = mongoose.model('Channel', ChannelSchema);
-var Message = module.exports = mongoose.model('Message', MessageSchema);
+var Message = mongoose.model('Message', MessageSchema);
 
 module.exports.channelExists = function(channelName, done){
   Channel.findOne({title: channelName}, function(err, result){
@@ -27,6 +27,22 @@ module.exports.channelExists = function(channelName, done){
 
 module.exports.createChannel = function(newChannel, done){
   newChannel.users.push('Admin');
+  if (!String.prototype.format) {
+  String.prototype.format = function() {
+    var args = arguments;
+    return this.replace(/{(\d+)}/g, function(match, number) { 
+      return typeof args[number] != 'undefined'
+        ? args[number]
+        : match
+      ;
+    });
+  };
+  }
+  var initMessage = new Message({
+    author: 'Dixi',
+    body: "Created **{0}**\n{1}".format(newChannel.title, new Date().toString())
+  });
+  newChannel.messages.push(initMessage);
   newChannel.save(done);
 }
 
@@ -63,7 +79,6 @@ module.exports.post = function(channel, author, body){
     author: author,
     body: body
   });
-  console.log(channel, author, body);
   channel.messages.push(message);
   channel.save();
 }

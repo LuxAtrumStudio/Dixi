@@ -25,17 +25,19 @@ router.post('/create', function(req, res, next) {
   });
   var title = req.body.title;
   var users = req.body.users;
-  if (!users) users = [req.user.name];
-  else if (!users.includes(req.user.name)) users.push(req.user.name);
   if (!title) {
     res.json({
       error: "Name is required"
     });
   } else {
+    if (!users) users = [req.user.name];
+    else if (!users.includes(req.user.name)) users.push(req.user.name);
     var newChannel = new Channel({
       title: title,
-      users: users
+      users: users,
+      messages: []
     });
+    console.log("IN>>", newChannel);
     Channel.channelExists(title, function(err, result) {
       if (err) console.log(err);
       if (result) {

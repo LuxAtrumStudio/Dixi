@@ -39,7 +39,7 @@ passport.deserializeUser(function(id, done) {
   });
 });
 
-router.get('/', function(req, res, next) {
+router.get('/list', function(req, res, next) {
   User.getUsers(function(err, results) {
     if (err) console.log(err);
     res.json({
@@ -87,7 +87,6 @@ router.post('/register', function(req, res, next) {
       else {
         User.createUser(newUser, function(err, result) {
           if (err) throw err;
-          console.log(result);
         });
         res.json({
           success: true,
