@@ -1,11 +1,51 @@
 var express = require('express');
 var router = express.Router();
 
+var passport = require('passport');
+var LocalStrategy = require('passport-local').Strategy;
+
 var User = require('../models/user');
 
-/* GET users listing. */
+passport.use(new LocalStrategy(
+  function(username, password, done) {
+    User.getUserByName(username, function(err, user) {
+      if (err) throw err;
+      if (!user) {
+        return done(null, false, {
+          message: "incorrect username or password"
+        });
+      }
+      User.comparePassword(password, user.password, function(err, isMatch) {
+        if (err) throw err;
+        if (isMatch) {
+          return done(null, user);
+        } else {
+          return done(null, false, {
+            message: "incorrect username or password"
+          });
+        }
+      });
+    });
+  }
+));
+
+passport.serializeUser(function(user, done) {
+  done(null, user.id);
+});
+
+passport.deserializeUser(function(id, done) {
+  User.getUserById(id, function(err, user) {
+    done(err, user);
+  });
+});
+
 router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
+  User.getUsers(function(err, results) {
+    if (err) console.log(err);
+    res.json({
+      users: results.map(x => x.name)
+    });
+  });
 });
 
 router.post('/register', function(req, res, next) {
@@ -40,7 +80,7 @@ router.post('/register', function(req, res, next) {
       password: paswd
     });
     User.userExists(newUser, function(err, result) {
-      if(err) console.log(err);
+      if (err) console.log(err);
       if (result) res.json({
         error: "User already exists"
       });
@@ -58,5 +98,32 @@ router.post('/register', function(req, res, next) {
     });
   }
 });
+
+router.post('/login', passport.authenticate('local'), function(req, res, next) {
+  res.json({ success: true, name: req.user.name });
+});
+
+router.get('/current', function(req, res, next) {
+  var login = req.user ? true : false;
+  if (req.user) {
+    res.json({
+      loggedin: login,
+      name: req.user.name
+    });
+  } else {
+    res.json({
+      loggedin: login
+    });
+  }
+});
+
+router.get('/logout', function(req, res, next) {
+  req.logout();
+  req.session.channel = null;
+  res.json({
+    loggedout: true
+  });
+});
+
 
 module.exports = router;

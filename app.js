@@ -7,7 +7,6 @@ var logger = require('morgan');
 
 var os = require('os');
 
-var mongo = require('mongodb');
 var mongoose = require('mongoose');
 
 var session = require('express-session');
@@ -15,6 +14,7 @@ var passport = require('passport');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+var channelsRouter= require('./routes/channels');
 
 var app = express();
 
@@ -29,13 +29,24 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use(session({
+  secret: 'keyboard cat',
+  resave: false,
+  saveUninitialized: true,
+  channel: null,
+}));
+
 app.use(formParser.parse({uploadDir: os.tmpdir(), autoClean: true}));
 app.use(formParser.format());
 app.use(formParser.stream());
 app.use(formParser.union());
 
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use('/channels', channelsRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -50,6 +61,7 @@ app.use(function(err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
+  // res.json({error: err.status || 500, message: err.message})
   res.render('error');
 });
 

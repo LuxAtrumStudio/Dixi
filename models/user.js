@@ -20,7 +20,13 @@ module.exports.userExists = function(newUser, done){
   User.findOne({name: newUser.name}, function(err, result){
     if(err) done(err);
     if(result) done(null, true);
-    else done(null, false);
+    else{
+      User.findOne({email: newUser.email}, function(err, result){
+        if(err) done(err);
+        if(result) done(null, true);
+        else done(null, false);
+      });
+    };
   });
 }
 
@@ -33,10 +39,13 @@ module.exports.createUser = function(newUser, done){
   });
 }
 
-module.exports.getUserByUsername = function(username, callback){
+module.exports.getUserByName = function(username, callback){
   var query = {name: username};
-  console.log(query);
   User.findOne(query, callback);
+}
+
+module.exports.getUserById = function(id, callback){
+  User.findById(id, callback);
 }
 
 module.exports.comparePassword = function(paswd, hash, callback){
@@ -44,4 +53,8 @@ module.exports.comparePassword = function(paswd, hash, callback){
     if(err) throw err;
     callback(null, isMatch);
   });
+}
+
+module.exports.getUsers = function(callback){
+  User.find({}, callback);
 }
