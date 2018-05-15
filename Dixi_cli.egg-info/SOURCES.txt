@@ -1,0 +1,7 @@
+README.rst
+Dixi_cli.egg-info/PKG-INFO
+Dixi_cli.egg-info/SOURCES.txt
+Dixi_cli.egg-info/dependency_links.txt
+Dixi_cli.egg-info/entry_points.txt
+Dixi_cli.egg-info/top_level.txt
+dixi/dixi.py
