@@ -24,6 +24,7 @@ module.exports.userExists = function(newUser, done){
       User.findOne({email: newUser.email}, function(err, result){
         if(err) done(err);
         if(result) done(null, true);
+        else if(newUser.name == 'Dixi' || newUser.name == 'Server') done(null, true);
         else done(null, false);
       });
     };
