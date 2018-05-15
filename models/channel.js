@@ -46,6 +46,10 @@ module.exports.createChannel = function(newChannel, done){
   newChannel.save(done);
 }
 
+module.exports.deleteChannel = function(channelId, callback){
+  Channel.findByIdAndRemove(channelId, callback);
+}
+
 module.exports.getChannelByName = function(channelName, done){
   Channel.findOne({title: channelName}, done);
 }
@@ -72,6 +76,10 @@ module.exports.getChannels = function(userName, callback){
     });
     callback(null, userChannels);
   });
+}
+
+module.exports.getAllChannels = function(callback){
+  Channel.find({}, callback);
 }
 
 module.exports.post = function(channel, author, body){

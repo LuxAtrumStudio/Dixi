@@ -96,14 +96,39 @@ router.post('/:channel/post', function(req, res, next) {
   if (!req.user) return res.json({
     error: "must be logged in for channels"
   });
-  Channel.getChannelById(req.session.channel, function(err, channel) {
+  console.log(req.params.channel);
+  Channel.getChannelByName(req.params.channel, function(err, channel) {
     if (err) console.log(err);
-    if (chennel.users.includes(req.user)) {
+    console.log("FOUND");
+    if (channel.users.includes(req.user.name)) {
+      console.log("IN");
       Channel.post(channel, req.user.name, req.body.message);
       res.json({
         channel: channel.name,
         user: req.user.name,
         post: req.body.message
+      });
+    } else {
+      res.json({
+        error: "channel not found"
+      });
+    }
+  });
+});
+
+router.get('/:channel/delete', function(req, res, next) {
+  if (!req.user) return res.json({
+    error: "must be logged in for channels"
+  });
+  Channel.getChannelByName(req.params.channel, function(err, channel) {
+    if (err) console.log(err);
+    if (channel.users.includes(req.user.name)) {
+      Channel.deleteChannel(channel.id, function(err, channel){
+        if(err) console.log(err);
+        res.json({
+          message: "deleted channel",
+          channel: channel.title
+        });
       });
     } else {
       res.json({

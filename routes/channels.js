@@ -37,7 +37,6 @@ router.post('/create', function(req, res, next) {
       users: users,
       messages: []
     });
-    console.log("IN>>", newChannel);
     Channel.channelExists(title, function(err, result) {
       if (err) console.log(err);
       if (result) {
