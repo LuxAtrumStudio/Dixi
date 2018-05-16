@@ -6,7 +6,7 @@ from dixi.output import *
 
 def channels(args):
     action('Getting Channel List', args.color)
-    content = requests.get("http://10.0.0.17:3000/channels/list", cookies=dixi.config.get('cookies')).json()
+    content = requests.get("http://{}/channels/list".format(dixi.config.get('addr')), cookies=dixi.config.get('cookies')).json()
     if 'error' in content:
         error(content['error'], args.color)
         sys.exit(3)
@@ -14,7 +14,7 @@ def channels(args):
 
 def users(args):
     action('Getting User List', args.color)
-    content = requests.get("http://10.0.0.17:3000/users/list", cookies=dixi.config.get('cookies')).json()
+    content = requests.get("http://{}/users/list".format(dixi.config.get('addr')), cookies=dixi.config.get('cookies')).json()
     current = content['current'] if 'current' in content else ''
     data = []
     for usr in content['users']:
@@ -27,7 +27,7 @@ def users(args):
 def view_post(args):
     response = dict()
     if args.channel:
-        response = requests.get("http://10.0.0.17:3000/{}".format(args.channel), cookies=dixi.config.get('cookies')).json()
+        response = requests.get("http://{}/{}".format(dixi.config.get('addr'), args.channel), cookies=dixi.config.get('cookies')).json()
         if 'error' in response:
             error(response['error'], args.color)
             sys.exit(5)
@@ -36,7 +36,7 @@ def view_post(args):
         for msg in response['messages']:
             print_message(msg, longest, args.color)
     else:
-        response = requests.get("http://10.0.0.17:3000/", cookies=dixi.config.get('cookies')).json()
+        response = requests.get("http://{}/".format(dixi.config.get('addr')), cookies=dixi.config.get('cookies')).json()
         if 'error' in response:
             error(response['error'], args.color)
             sys.exit(5)
@@ -50,7 +50,7 @@ def view_post(args):
             print()
 
 def post(args):
-    response = requests.post('http://10.0.0.17:3000/{}/post'.format(args.channel), cookies=dixi.config.get('cookies'), data={'message': ' '.join(args.post)}).json()
+    response = requests.post('http://{}/{}/post'.format(dixi.config.get('addr'), args.channel), cookies=dixi.config.get('cookies'), data={'message': ' '.join(args.post)}).json()
     if 'error' in response:
         error(response['error'], args.color)
         sys.exit(6)

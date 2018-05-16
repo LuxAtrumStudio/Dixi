@@ -2,6 +2,7 @@ import argparse
 import os
 import sys
 
+import dixi.config
 import dixi.user
 import dixi.channel
 import dixi.view
@@ -93,11 +94,21 @@ def main():
     channel_delete.add_argument('channel', nargs='?', help='Channel to delete')
     channel_delete.add_argument('--no-color', action='store_false', dest='color', help='Disable color in output')
 
+    # >>>>>>>>>> CONFIG <<<<<<<<<< #
+    config = subparser.add_parser('config', help='Manage configuration')
+    config.add_argument('--addr', help='Default host address')
+    config.add_argument('--no-color', action='store_false', dest='color', help='Disable color in output')
+
     parser.set_default_subparser('view')
     args = parser.parse_args()
+    if args.command != 'config' and not dixi.config.exists('addr'):
+        error('Must set host address before accessing server', args.color)
+        sys.exit(7)
     if args.command == 'user':
         dixi.user.main(args)
     elif args.command == 'channel':
         dixi.channel.main(args)
     elif args.command == 'view':
         dixi.view.main(args)
+    elif args.command == 'config':
+        dixi.config.main(args)

@@ -17,7 +17,7 @@ def register(args):
         error('Passwords do not match', args.color)
         sys.exit(1)
     action('Registering User {}'.format(args.name), args.color)
-    response = requests.post('http://10.0.0.17:3000/users/register', data={'name': args.name, 'email': args.email, 'password': args.password, 'password2': args.password2}).json()
+    response = requests.post('http://{}/users/register'.format(dixi.config.get('addr')), data={'name': args.name, 'email': args.email, 'password': args.password, 'password2': args.password2}).json()
     if 'error' in response:
         error(response['error'], args.color)
         sys.exit(2)
@@ -31,7 +31,7 @@ def login(args):
     while args.password is None or args.password is str():
         args.password= prompt_secure('Password','', args.color)
     action('Logging in {}'.format(args.name), args.color)
-    response = requests.post('http://10.0.0.17:3000/users/login', data={'username': args.name, 'password': args.password})
+    response = requests.post('http://{}/users/login'.format(dixi.config.get('addr')), data={'username': args.name, 'password': args.password})
     if 'success' in response.json():
         success('Logged in {}'.format(args.name), args.color)
         dixi.config.set('cookies', dict(response.cookies))
