@@ -8,7 +8,7 @@ var User = require('../models/user');
 var Channel = require('../models/channel');
 
 router.get('/list', function(req, res, next) {
-  if (!req.user) res.json({
+  if (!req.user) return res.json({
     error: "must be logged in for channels"
   });
   Channel.getChannels(req.user.name, function(err, results) {

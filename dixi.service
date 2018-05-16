@@ -1,0 +1,8 @@
+[Unit]
+Description=Light weight chat server
+After=network.target
+
+[Service]
+ExecStart=/home/arden/dixi/bin/www.js
+Environment=PATH=/usr/bin:/usr/local/bin
+Environment=NODE_ENV=production
