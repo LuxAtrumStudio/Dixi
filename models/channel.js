@@ -11,6 +11,7 @@ var MessageSchema = mongoose.Schema({
 var ChannelSchema = mongoose.Schema({
   title: String,
   users: [String],
+  open: { type: Boolean, default: false},
   messages: [MessageSchema]
 });
 
@@ -46,6 +47,10 @@ module.exports.createChannel = function(newChannel, done){
   newChannel.save(done);
 }
 
+module.exports.deleteChannel = function(channelName, done){
+  Channel.find({title: channelName}).remove(done);
+}
+
 module.exports.getChannelByName = function(channelName, done){
   Channel.findOne({title: channelName}, done);
 }
@@ -59,8 +64,13 @@ module.exports.userInChannel = function(channelName, userName, callback){
     if (err) callback(err);
     if (!channel) callback(null, false);
     else if (channel.users.includes(userName)) callback(null, true);
+    else if (channel.open === true) calback(null, true);
     else callback (null, false);
   });
+}
+
+module.exports.getAllChannels = function(callback){
+  Channel.find({}, callback);
 }
 
 module.exports.getChannels = function(userName, callback){
@@ -69,6 +79,7 @@ module.exports.getChannels = function(userName, callback){
     var userChannels = [];
     channels.forEach(function(item){
       if (item.users.includes(userName)) userChannels.push(item);
+      else if(item.open === true) userChannels.push(item);
     });
     callback(null, userChannels);
   });

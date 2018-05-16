@@ -113,7 +113,7 @@ router.post('/:channel/post', function(req, res, next) {
     if (result) {
       Channel.getChannelByName(req.params.channel, function(err, channel) {
         if (err) console.log(err);
-        if (channel.users.includes(req.user.name)) {
+        if (channel.users.includes(req.user.name) || channel.open === true) {
           Channel.post(channel, req.user.name, req.body.message);
           res.json({
             author: req.user.name,
