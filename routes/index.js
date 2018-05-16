@@ -15,10 +15,11 @@ router.get('/', function(req, res, next) {
     updated.setDate(updated.getDate() - 14);
   }
   updated = updated.getTime();
-  response = {}
+  response = {'users': []}
   Channel.getChannels(req.user.name, function(err, channels) {
     if (err) console.log(err);
     channels.forEach(function(channel) {
+      response.users = response.users.concat(channel.users);
       var title = channel.title;
       response[title] = [];
       for (var i = channel.messages.length - 1; i >= 0; --i) {
@@ -34,6 +35,7 @@ router.get('/', function(req, res, next) {
         });
       }
     });
+    response.users = response.users.filter(function(item, pos){return response.users.indexOf(item) == pos});
     response.update = Date.now();
     res.json(response);
   });
@@ -50,10 +52,11 @@ router.get('/update', function(req, res, next) {
     updated.setDate(updated.getDate() - 14);
   }
   updated = updated.getTime();
-  response = {}
+  response = {'users': []}
   Channel.getChannels(req.user.name, function(err, channels) {
     if (err) console.log(err);
     channels.forEach(function(channel) {
+      response.users = response.users.concat(channel.users)
       var title = channel.title;
       response[title] = [];
       for (var i = channel.messages.length - 1; i >= 0; --i) {
@@ -69,6 +72,7 @@ router.get('/update', function(req, res, next) {
         });
       }
     });
+    response.users = response.users.filter(function(item, pos){return response.users.indexOf(item) == pos});
     response.update = Date.now();
     res.json(response);
   });
@@ -85,9 +89,9 @@ router.post('/post', function(req, res, next) {
     if (err) console.log(err);
     Channel.post(channel, req.user.name, req.body.message);
     res.json({
-      channel: channel.name,
-      user: req.user.name,
-      post: req.body.message
+      author: req.user.name,
+      body: req.body.message,
+      time: Date.now()
     });
   });
 });
@@ -100,10 +104,15 @@ router.post('/:channel/post', function(req, res, next) {
     if (err) console.log(err);
     if (chennel.users.includes(req.user)) {
       Channel.post(channel, req.user.name, req.body.message);
+        response[title].unshift({
+          author: msg.author,
+          body: msg.body,
+          time: msg.date.getTime()
+        });
       res.json({
-        channel: channel.name,
-        user: req.user.name,
-        post: req.body.message
+        author: req.user.name,
+	body: req.body.message,
+	time: Date.now()
       });
     } else {
       res.json({
@@ -149,6 +158,7 @@ router.get('/:channel', function(req, res, next) {
         }
         res.json({
           time: Date.now(),
+	  users: channel.users,
           messages: messages
         });
       });
