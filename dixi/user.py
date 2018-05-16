@@ -45,6 +45,14 @@ def logout(args):
 def delete(args):
     if not action('Delete User {}'.format(args.name if args.name else 'Current'), args.color, True):
         sys.exit(0)
+    if args.name:
+        response = requests.post('http://{}/users/delete'.format(dixi.config.get('addr')), data={'name': args.name}, cookies=dixi.config.get('cookies')).json()
+    else:
+        response = requests.get('http://{}/users/delete'.format(dixi.config.get('addr')), cookies=dixi.config.get('cookies')).json()
+    if 'error' in response:
+        error(response['error'], args.color)
+        sys.exit(9)
+    success('Deleted User {}'.format(args.name), args.color)
 
 def main(args):
     if args.user_command == 'register':

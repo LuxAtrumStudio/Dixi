@@ -3,7 +3,7 @@ import sys
 import random
 import math
 from dixi.input import getch
-from dixi.color import get_color
+from dixi.color import get_color, brighten
 from dixi.markdown import render
 
 def display_length(string):
@@ -45,6 +45,30 @@ def prompt_secure(name, description, color):
             value += ch
     return value
 
+def prompt_markdown(name, color):
+    print(get_color(6, False, color) + name + ': ' + get_color('default', False, color))
+    markdown = str()
+    cnt = -1
+    while True:
+        ch = getch()
+        if ord(ch) == 27:
+            return markdown
+        elif ord(ch) == 127 and len(markdown) > 0:
+            markdown = markdown[:-1]
+        elif ord(ch) == 13:
+            if markdown[-1] == '\n':
+                return markdown[:-1]
+            markdown += '\n'
+        elif ord(ch) >= 32 and ord(ch) <= 126:
+            markdown += ch
+        rend = render(markdown, 80, color)
+        if cnt != -1:
+            for i in range(cnt + 1):
+                print("\033[A\033[2K", end='')
+        print(rend)
+        cnt = rend.count('\n')
+    return markdown
+
 def action(msg, color, verify=False):
     if not verify:
         print("\033[1m" + get_color(13, False, color) + msg + "\033[21m" + get_color('default', False, color))
@@ -68,8 +92,9 @@ def success(msg, color):
 
 def print_user(usr, color):
     random.seed(usr)
-    random.randint(0, 256)
-    rgb = (random.randint(0, 256), random.randint(0,256), random.randint(0, 256))
+    rgb = sorted([0, random.randint(0, 256), random.randint(0, 256), 256])
+    rgb = [rgb[i+1] - rgb[i] for i in range(0, len(rgb) - 1)]
+    rgb = brighten(rgb, 0.5)
     if usr == 'Dixi' or usr == 'Admin':
         rgb = (128, 128, 128)
     return get_color(rgb, False, color) + usr + get_color('default', False, color)
@@ -77,7 +102,7 @@ def print_user(usr, color):
 def print_message(data, longest, color, width=80):
     usr = print_user(data['author'], color)
     usr = usr + (' ' * (longest - len(data['author'])))
-    body = render(data['body'], width - (longest + 2)).replace('\n', '\n' + (' ' * (longest + 2)))
+    body = render(data['body'], width - (longest + 2), color).replace('\n', '\n' + (' ' * (longest + 2)))
     print(usr, end='  ')
     for line in body.split('\n'):
         print(line)

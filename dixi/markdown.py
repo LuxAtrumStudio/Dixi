@@ -68,7 +68,16 @@ def render(markdown, width=80, color=True):
                             stack.append(inline[0])
 
         if not state:
+            if len(line) >= width:
+                length = 0
+                cp = line[:]
+                line = ''
+                for ch in cp.split(' '):
+                    if length + len(ch) + 1 >= width:
+                        line += '\n'
+                        length = 0
+                    line += ' ' + ch
+                    length += len(ch) + 1
             line += '\n'
         response += line
-    # response += "\033[0m"
     return response[:-1] + "\033[0m"

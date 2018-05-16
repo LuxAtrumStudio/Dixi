@@ -49,8 +49,11 @@ def main():
     # >>>>>>>>>> VIEW <<<<<<<<< #
     view = subparser.add_parser('view', help='View recent posts')
     view.add_argument('channel', nargs='?', help='Channel to view posts from')
-    view.add_argument('post', nargs='*', help='String to post')
+    view.add_argument('-p', '--post', action='store_true', help='Enables post prompt')
+    view.add_argument('-a', '--all', action='store_true', help='Sends post to all channels')
+    view.add_argument('-s', '--server', action='store_true', help='Sends post as server')
     view.add_argument('--no-color', action='store_false', dest='color', help='Disable color in output')
+    view.add_argument('body', nargs='*', help='String to post')
 
     # >>>>>>>>>> USER <<<<<<<<< #
     user = subparser.add_parser('user', help='Manage user profile')

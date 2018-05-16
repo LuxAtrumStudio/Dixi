@@ -27,6 +27,12 @@ def get_color_ability():
 def clamp(color, minn, maxn):
     return max(minn, min(maxn, color))
 
+def brighten(color, perc):
+    diff = int(perc * min([256 - color[0], 256 - color[1], 256 - color[2]]))
+    return [int(clamp(color[0] + diff, 0, 255)),
+            int(clamp(color[1] + diff, 0, 255)),
+            int(clamp(color[2] + diff, 0, 255))]
+
 def get_rgb(color):
     red = 0
     green = 0
