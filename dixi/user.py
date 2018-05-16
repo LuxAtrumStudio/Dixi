@@ -30,8 +30,9 @@ def login(args):
     while args.password is None or args.password is str():
         args.password= prompt_secure('Password','', args.color)
     action('Logging in {}'.format(args.name), args.color)
-    response = requests.post('http://10.0.0.17:3000/users/login', data={'username': args.name, 'password': args.password}).json()
-    if 'success' in response:
+    response = requests.post('http://10.0.0.17:3000/users/login', data={'username': args.name, 'password': args.password})
+    print(dict(response.cookies))
+    if 'success' in response.json():
         success('Logged in {}'.format(args.name), args.color)
 
 def logout(args):
