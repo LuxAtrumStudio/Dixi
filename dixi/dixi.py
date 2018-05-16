@@ -6,6 +6,7 @@ import dixi.config
 import dixi.user
 import dixi.channel
 import dixi.view
+from dixi.output import error
 
 def set_default_subparser(self, name, args=None):
     """default subparser selection. Call after setup, just before parse_args()

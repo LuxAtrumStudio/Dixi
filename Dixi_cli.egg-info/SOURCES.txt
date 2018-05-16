@@ -6,8 +6,10 @@ Dixi_cli.egg-info/entry_points.txt
 Dixi_cli.egg-info/top_level.txt
 dixi/channel.py
 dixi/color.py
+dixi/config.py
 dixi/dixi.py
 dixi/input.py
+dixi/markdown.py
 dixi/output.py
 dixi/user.py
 dixi/view.py
