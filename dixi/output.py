@@ -77,7 +77,7 @@ def print_user(usr, color):
 def print_message(data, longest, color, width=80):
     usr = print_user(data['author'], color)
     usr = usr + (' ' * (longest - len(data['author'])))
-    body = render(data['body'], width).replace('\n', '\n' + (' ' * (longest + 2)))
+    body = render(data['body'], width - (longest + 2)).replace('\n', '\n' + (' ' * (longest + 2)))
     print(usr, end='  ')
     for line in body.split('\n'):
         print(line)

@@ -10,16 +10,16 @@ def create(args):
     if args.users == []:
         args.users = prompt('Users', '', args.color).split(' ')
     action('Creating Channel {}'.format(args.title), args.color)
-    response = requests.post('http://10.0.0.17:3000/channels/create', data={'title': args.title, 'users': ','.join(args.users)}, cookies=dixi.config.get('cookies'))
+    response = requests.post('http://{}/channels/create'.format(dixi.config.get('addr')), data={'title': args.title, 'users': ','.join(args.users)}, cookies=dixi.config.get('cookies'))
     if 'error' in response:
         error(response['error'], args.color)
         sys.exit(4)
     success('Created Channel {}'.format(args.title), args.color)
 
 def delete(args):
-    while args.channel is None or args.channel is list():
-        args.title = prompt('Channel', '', args.color)
-    if not action('Delete Channel {}'.format(args.title), args.color, True):
+    while args.channel is None or args.channel is str():
+        args.channel = prompt('Channel', '', args.color)
+    if not action('Delete Channel {}'.format(args.channel), args.color, True):
         sys.exit(0)
 
 

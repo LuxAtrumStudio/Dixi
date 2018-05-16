@@ -43,8 +43,19 @@ def get(name):
         return CONFIG[name]
     return None
 
+def exists(name):
+    global CONFIG
+    load_config()
+    if name in CONFIG:
+        return True
+    return False
+
 def set(name, value=None):
     global CONFIG
     load_config()
     CONFIG[name] = value
     save_config()
+
+def main(args):
+    if args.addr:
+        set('addr', args.addr)
