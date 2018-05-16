@@ -8,7 +8,7 @@ def create(args):
     while args.title is None or args.title is str():
         args.title = prompt('Title', '', args.color)
     if args.users == []:
-        args.users = prompt('Users', '', args.color).split(',')
+        args.users = prompt('Users', '', args.color).split(' ')
     action('Creating Channel {}'.format(args.title), args.color)
     response = requests.post('http://10.0.0.17:3000/channels/create', data={'title': args.title, 'users': ','.join(args.users)}, cookies=dixi.config.get('cookies'))
     if 'error' in response:

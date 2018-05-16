@@ -15,8 +15,9 @@ def load_config():
         elif os.path.exists(os.path.expanduser('~/.dixi')):
             path = '~/.dixi'
         path = os.path.expanduser(path)
-        with open(path) as file:
-            CONFIG = json.load(file)
+        if path != '':
+            with open(path) as file:
+                CONFIG = json.load(file)
 
 def save_config():
     global CONFIG
