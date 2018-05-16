@@ -1,6 +1,7 @@
 import sys
 import json
 import requests
+import dixi.config
 from dixi.output import *
 
 def register(args):
@@ -31,13 +32,15 @@ def login(args):
         args.password= prompt_secure('Password','', args.color)
     action('Logging in {}'.format(args.name), args.color)
     response = requests.post('http://10.0.0.17:3000/users/login', data={'username': args.name, 'password': args.password})
-    print(dict(response.cookies))
     if 'success' in response.json():
         success('Logged in {}'.format(args.name), args.color)
+        dixi.config.set('cookies', dict(response.cookies))
 
 def logout(args):
     if not action('Logout', args.color, True):
         sys.exit(0)
+    dixi.config.set('cookies')
+    success('Logged out', args.color)
 
 def delete(args):
     if not action('Delete User {}'.format(args.name if args.name else 'Current'), args.color, True):

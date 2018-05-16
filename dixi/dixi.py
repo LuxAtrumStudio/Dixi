@@ -47,8 +47,8 @@ def main():
 
     # >>>>>>>>>> VIEW <<<<<<<<< #
     view = subparser.add_parser('view', help='View recent posts')
-    view.add_argument('group', nargs='?', choices={'users', 'channels'}, help='Lists users/channels')
     view.add_argument('channel', nargs='?', help='Channel to view posts from')
+    view.add_argument('post', nargs='*', help='String to post')
     view.add_argument('--no-color', action='store_false', dest='color', help='Disable color in output')
 
     # >>>>>>>>>> USER <<<<<<<<< #

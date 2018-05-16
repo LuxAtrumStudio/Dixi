@@ -1,4 +1,7 @@
 import sys
+import json
+import requests
+import dixi.config
 from dixi.output import *
 
 def create(args):
@@ -7,6 +10,11 @@ def create(args):
     if args.users == []:
         args.users = prompt('Users', '', args.color).split(',')
     action('Creating Channel {}'.format(args.title), args.color)
+    response = requests.post('http://10.0.0.17:3000/channels/create', data={'title': args.title, 'users': ','.join(args.users)}, cookies=dixi.config.get('cookies'))
+    if 'error' in response:
+        error(response['error'], args.color)
+        sys.exit(4)
+    success('Created Channel {}'.format(args.title), args.color)
 
 def delete(args):
     while args.channel is None or args.channel is list():
