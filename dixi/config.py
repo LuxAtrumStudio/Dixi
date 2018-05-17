@@ -68,14 +68,14 @@ def addr(color):
     card = gen_card('Address', 5)
     addr = str()
     addr = prompt(card, 'Address', '', color)
-    set_color = prompt_choices(card, 'Color', '', ['True', 'False'], color)
-    post_prompt = prompt_choices(card, 'Post Prompt', '', ['True', 'False'], color)
+    set_color = prompt_choices(card, 'Color', '', [True, False], color)
+    post_prompt = prompt_choices(card, 'Post Prompt', '', [True, False], color)
     timeout_time = prompt_choices(card, 'Pause Delay', '', [-1, 0, 1, 2, 3, 4, 5], color)
     if addr and addr != str():
         set('addr', addr)
-    if set_color and set_color != str():
+    if set_color is not None:
         set('color', set_color)
-    if post_prompt and post_prompt != str():
+    if post_prompt is not None:
         set('post-prompt', post_prompt)
     if timeout_time is not None:
         if timeout_time == -1:

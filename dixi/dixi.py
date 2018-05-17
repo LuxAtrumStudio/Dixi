@@ -83,7 +83,7 @@ def write_options(pannel):
 
 def load_posts():
     global POSTS
-    POSTS, users, update = dixi.view.posts(True, dixi.config.get('update'))
+    POSTS, users, update = dixi.view.posts(dixi.config.get('color'), dixi.config.get('update'))
     dixi.config.set('update', update)
 
 def load_menu():
@@ -110,7 +110,7 @@ def load_user():
     global longest
     users = dixi.user.list()
     longest = len(max(users, key=len))
-    users = [" " + print_user(x, True) if x != dixi.config.get('user') else '\033[1m[' + print_user(x, True) + ']\033[0m' for x in users]
+    users = [" " + print_user(x, dixi.config.get('color')) if x != dixi.config.get('user') else '\033[1m[' + print_user(x, dixi.config.get('color')) + ']\033[0m' for x in users]
     PANNELS['users']['options'] = users
     write_options('users')
 
@@ -123,7 +123,7 @@ def load():
     load_user()
     load_posts()
     if dixi.config.get('user'):
-        PANNELS['entry']['pannel'].set_title(print_user(dixi.config.get('user'), True))
+        PANNELS['entry']['pannel'].set_title(print_user(dixi.config.get('user'), dixi.config.get('color')))
     else:
         PANNELS['entry']['pannel'].set_title('')
 
@@ -170,19 +170,21 @@ def action(key):
         clean = True
         option = PANNELS[pannel]['options'][PANNELS[pannel]['selection']]
         if option == 'Login':
-            dixi.user.login(True)
+            dixi.user.login(dixi.config.get('color'))
         elif option == 'Register':
-            dixi.user.register(True)
+            dixi.user.register(dixi.config.get('color'))
         elif option == 'Logout':
-            dixi.user.logout(True)
+            dixi.user.logout(dixi.config.get('color'))
         elif option == 'Delete':
-            dixi.user.delete(True)
+            dixi.user.delete(dixi.config.get('color'))
         elif option == 'Config':
-            dixi.config.addr(True)
+            dixi.config.addr(dixi.config.get('color'))
+            global current_channel
+            current_channel = None
         elif option == 'Create Channel':
-            dixi.channel.create(True)
+            dixi.channel.create(dixi.config.get('color'))
         elif option == 'Delete Channel':
-            dixi.channel.delete(True)
+            dixi.channel.delete(dixi.config.get('color'))
         elif option == 'Quit':
             close()
         load()
@@ -215,7 +217,7 @@ def display_channel():
         PANNELS['main']['pannel'].set_title(None)
     if channel in POSTS:
         for post in POSTS[channel]:
-            print_message(PANNELS['main']['pannel'], post, longest, True)
+            print_message(PANNELS['main']['pannel'], post, longest, dixi.config.get('color'))
 
 def message(key):
     global PANNELS
@@ -227,7 +229,7 @@ def message(key):
         body = body[:-1]
     elif key == 'ENTER':
         if body and body[-1] == '\n':
-            if dixi.view.post_message(True, body[:-1].lstrip(), PANNELS['main']['pannel'].title):
+            if dixi.view.post_message(dixi.config.get('color'), body[:-1].lstrip(), PANNELS['main']['pannel'].title):
                 load_posts()
                 current_channel = None
                 body = str()
@@ -243,7 +245,7 @@ def message(key):
         PANNELS['entry']['pannel'].cursor_up()
     elif key == 'DOWN':
         PANNELS['entry']['pannel'].cursor_down()
-    rend = dixi.markdown.render(body, PANNELS['entry']['pannel'].dim[1] - 2, True)
+    rend = dixi.markdown.render(body, PANNELS['entry']['pannel'].dim[1] - 2, dixi.config.get('color'))
     PANNELS['entry']['pannel'].clear(True)
     PANNELS['entry']['pannel'].print(rend)
     PANNELS['entry']['pannel'].render_box()

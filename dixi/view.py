@@ -35,8 +35,8 @@ def post_message(color, message, channel):
         error(card, 'must be logged in to post', color)
         timeout(dixi.config.get('timeout'))
         return
-    render = dixi.markdown.render(message, 80, True)
-    if dixi.config.get('post-prompt') == "True":
+    render = dixi.markdown.render(message, 80, color)
+    if dixi.config.get('post-prompt') == True:
         card = gen_card('Post', len(render.split('\n')) + 2)
         card.print(render)
         if action(card, 'Post message to {}'.format(channel), True, color):
