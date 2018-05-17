@@ -47,6 +47,8 @@ class _GetchWindows:
 getch = _Getch()
 
 def timeout(sec):
+    if sec is None:
+        sec = 1
     try:
         with Timeout(sec):
             return getch()

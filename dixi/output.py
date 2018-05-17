@@ -40,6 +40,7 @@ def prompt(card, name, description, color):
             sys.stdout.flush()
             value += ch
         elif ord(ch) == 27:
+            card.print()
             return None
         card.move_to((-1, 2))
     return value
@@ -55,7 +56,7 @@ def prompt_choices(card, name, description, choices, color):
         card.print(get_color(6, False, color) + name + description + ": " + get_color('default', False, color), end='')
         for i, it in enumerate(choices):
             if i == sel:
-                card.print("\033[7m" + it + '\033[27m', end=' ')
+                card.print("\033[7m" + str(it) + '\033[27m', end=' ')
             else:
                 card.print(it, end=' ')
         ch = getinput()

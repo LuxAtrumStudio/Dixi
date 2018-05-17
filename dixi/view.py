@@ -33,7 +33,7 @@ def post_message(color, message, channel):
     if channel is None:
         card = gen_card('Post', 1)
         error(card, 'must be logged in to post', color)
-        timeout(2)
+        timeout(dixi.config.get('timeout'))
         return
     render = dixi.markdown.render(message, 80, True)
     if dixi.config.get('post-prompt') == "True":
@@ -43,13 +43,13 @@ def post_message(color, message, channel):
             response = requests.post('http://{}/{}/post'.format(dixi.config.get('addr'), channel), cookies=dixi.config.get('cookies'), data={'message': message}).json()
             if 'error' in response:
                 error(card, response['error'], color)
-                timeout(2)
+                timeout(dixi.config.get('timeout'))
                 return False
             success(card, 'Posted message', color)
-            timeout(2)
+            timeout(dixi.config.get('timeout'))
             return True
         warning(card, 'Not Posting message', color)
-        timeout(2)
+        timeout(dixi.config.get('timeout'))
         return False
     else:
         response = requests.post('http://{}/{}/post'.format(dixi.config.get('addr'), channel), cookies=dixi.config.get('cookies'), data={'message': message}).json()

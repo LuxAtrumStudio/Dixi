@@ -32,9 +32,9 @@ def create(color):
     response = requests.post('http://{}/channels/create'.format(dixi.config.get('addr')), data={'title': title, 'users': ','.join(users)}, cookies=dixi.config.get('cookies'))
     if 'error' in response:
         error(card, response['error'], color)
-        timeout(2)
+        timeout(dixi.config.get('timeout'))
     success(card, 'Created Channel {}'.format(title), color)
-    timeout(2)
+    timeout(dixi.config.get('timeout'))
 
 def delete(color):
     card = gen_card("Delete Channel", 3)
@@ -47,10 +47,10 @@ def delete(color):
         response = requests.post('http://{}/channels/delete'.format(dixi.config.get('addr')), data={'title': channel}, cookies=dixi.config.get('cookies')).json()
         if 'error' in response:
             error(card, response['error'], color)
-            timeout(2)
+            timeout(dixi.config.get('timeout'))
             return
         success(card, 'Deleted Channel {}'.format(channel), color)
-    timeout(2)
+    timeout(dixi.config.get('timeout'))
 
 
 def list():
