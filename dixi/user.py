@@ -25,20 +25,30 @@ def register(color):
     password2 = str()
     while name is str():
         name = prompt(card, 'Username', '', color)
+    if name is None:
+        return
     while email is str():
         email = prompt(card, 'Email', 'Recovery email address', color)
+    if email is None:
+        return
     while password is str():
         password= prompt_secure(card, 'Password','', color)
+    if password is None:
+        return
     while password2 is str():
         password2= prompt_secure(card, 'Password Confirmation','', color)
+    if password2 is None:
+        return
     if password != password2:
         error(card, 'Passwords do not match', color)
-        sys.exit(1)
+        timeout(2)
+        return
     action(card, 'Registering User {}'.format(name), color)
     response = requests.post('http://{}/users/register'.format(dixi.config.get('addr')), data={'name': name, 'email': email, 'password': password, 'password2': password2}).json()
     if 'error' in response:
         error(card, response['error'], color)
-        sys.exit(2)
+        timeout(2)
+        return
     else:
         success(card, 'Created user {}'.format(name), color)
     timeout(2)
@@ -62,16 +72,19 @@ def login(color):
 
 def logout(color):
     card = gen_card("Logout", 2)
-    if not action(card, 'Logout', color, True):
-        sys.exit(0)
-    dixi.config.set('cookies')
-    dixi.config.set('user')
-    success(card, 'Logged out', color)
+    if action(card, 'Logout', color, True):
+        dixi.config.set('cookies')
+        dixi.config.set('user')
+        success(card, 'Logged out', color)
+    else:
+        warning(card, 'Not Logging Out', color)
     timeout(2)
 
 def delete(color):
-    card = gen_card('Delete', 3)
+    card = gen_card('Delete User', 3)
     name = prompt(card, 'Username', '', color)
+    if name is None:
+        return
     if not action(card, 'Delete User {}'.format(name if name else 'Current'), color, True):
         sys.exit(0)
     if name:

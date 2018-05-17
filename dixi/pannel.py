@@ -15,6 +15,7 @@ class Pannel(object):
         self.title = title
         self.bold = False
         self.appendable = False
+        self.cursor = -1
 
     def resize(self, dim):
         self.dim = dim
@@ -22,9 +23,15 @@ class Pannel(object):
     def move(self, pos):
         self.pos = pos
 
-    def clear(self):
+    def clear(self, full=False):
         self.lines = []
         self.appendable = False
+        if full:
+            for i in range(1, self.dim[0] - 1):
+                print(self.rel_pos(i,1), ' ' * (self.dim[1] - 2), sep='')
+
+    def pop(self):
+        self.lines[-1] = ''
 
     def abs_pos(self, pos):
         return "\033[{};{}H".format(pos[0], pos[1])
@@ -90,11 +97,25 @@ class Pannel(object):
         self.title = title
         self.init = True
 
-    def render(self):
-        if self.init:
-            self.render_box()
-            self.render_title()
-            self.init = False
+    def toggle_cursor(self):
+        if self.cursor == -1:
+            self.cursor = 0
+        else:
+            self.cursor = -1
+        self.init = True
+
+    def cursor_up(self):
+        if self.cursor > 0:
+            self.cursor -= 1
+
+    def cursor_down(self):
+        display = self.get_display()
+        if self.cursor == -1:
+            return
+        if self.cursor + self.dim[0] - 3 <= len(display):
+            self.cursor += 1
+
+    def get_display(self):
         display_lines = []
         for line in self.lines:
             if display_length(line) > self.dim[1] - 2:
@@ -111,11 +132,26 @@ class Pannel(object):
                 display_lines += line.split('\n')
             elif line != '':
                 display_lines.append(line)
+        return display_lines
+
+    def render(self):
+        if self.init:
+            self.render_box()
+            self.render_title()
+            self.init = False
+        display_lines = self.get_display()
         if len(display_lines) < self.dim[0] - 2:
             for i, line in enumerate(display_lines):
                 print(self.rel_pos(i+2, 2), line, sep='')
         else:
-            count = len(display_lines)
-            start = count - self.dim[0]
-            for i in range(count - self.dim[0] + 2, count):
-                print(self.rel_pos(i-start, 2), display_lines[i], ' ' * (self.dim[1] - 2 - len(display_lines[i])), sep='')
+            if self.cursor == -1:
+                count = len(display_lines)
+                start = count - self.dim[0]
+                for i in range(count - self.dim[0] + 2, count):
+                    print(self.rel_pos(i-start, 2), display_lines[i], ' ' * (self.dim[1] - 2 - len(display_lines[i])), sep='')
+            else:
+                count = len(display_lines)
+                start = self.cursor
+                for i in range(self.cursor, min(count, start + self.dim[0] - 2)):
+                    print(self.rel_pos(i-start+2, 2), display_lines[i], ' ' * (self.dim[1] - 2 - len(display_lines[i])), sep='')
+

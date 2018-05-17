@@ -1,32 +1,56 @@
+import os
 import sys
 import json
 import requests
 import dixi.config
-from dixi.output import *
+from dixi.input import getch, timeout
+from dixi.pannel import Pannel
+from dixi.output import prompt, prompt_secure, action, error, warning, success
 
-def create(args):
-    while args.title is None or args.title is str():
-        args.title = prompt('Title', '', args.color)
-    if args.users == []:
-        args.users = prompt('Users', '', args.color).split(' ')
-    action('Creating Channel {}'.format(args.title), args.color)
-    response = requests.post('http://{}/channels/create'.format(dixi.config.get('addr')), data={'title': args.title, 'users': ','.join(args.users)}, cookies=dixi.config.get('cookies'))
-    if 'error' in response:
-        error(response['error'], args.color)
-        sys.exit(4)
-    print(response)
-    success('Created Channel {}'.format(args.title), args.color)
+def gen_card(name, lines):
+    rows, columns = os.popen("stty size", "r").read().split()
+    rows = int(rows)
+    columns = int(columns)
+    lines += 2
+    card = Pannel('\033[1m{}\033[0m'.format(name), (lines, columns // 4), ((rows - lines) // 2, (columns - (columns // 4)) // 2))
+    card.render()
+    return card
 
-def delete(args):
-    while args.channel is None or args.channel is str():
-        args.channel = prompt('Channel', '', args.color)
-    if not action('Delete Channel {}'.format(args.channel), args.color, True):
-        sys.exit(0)
-    response = requests.post('http://{}/channels/delete'.format(dixi.config.get('addr')), data={'title': args.channel}, cookies=dixi.config.get('cookies')).json()
+def create(color):
+    card = gen_card("Create Channel", 4)
+    title = str()
+    while title is str():
+        title = prompt(card, 'Title', '', color)
+    if title is None:
+        return
+    users = prompt(card, 'Users', '', color)
+    if users is None:
+        return
+    else:
+        users = users.split(' ')
+    action(card, 'Creating Channel {}'.format(title), color)
+    response = requests.post('http://{}/channels/create'.format(dixi.config.get('addr')), data={'title': title, 'users': ','.join(users)}, cookies=dixi.config.get('cookies'))
     if 'error' in response:
-        error(response['error'], args.color)
-        sys.exit(8)
-    success('Deleted Channel {}'.format(args.channel), args.color)
+        error(card, response['error'], color)
+        timeout(2)
+    success(card, 'Created Channel {}'.format(title), color)
+    timeout(2)
+
+def delete(color):
+    card = gen_card("Delete Channel", 3)
+    channel = str()
+    while channel is str():
+        channel = prompt(card, 'Channel', '', color)
+    if channel is None:
+        return
+    if action(card, 'Delete Channel {}'.format(channel), color, True):
+        response = requests.post('http://{}/channels/delete'.format(dixi.config.get('addr')), data={'title': channel}, cookies=dixi.config.get('cookies')).json()
+        if 'error' in response:
+            error(card, response['error'], color)
+            timeout(2)
+            return
+        success(card, 'Deleted Channel {}'.format(channel), color)
+    timeout(2)
 
 
 def list():

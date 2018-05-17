@@ -65,10 +65,16 @@ def set(name, value=None):
     CONFIG[name] = value
 
 def addr(color):
-    card = gen_card('Address', 2)
+    card = gen_card('Address', 4)
     addr = str()
-    while addr is str():
-        addr = prompt(card, 'Address', '', color)
-    set('addr', addr)
-    success(card, 'Set server Address', color)
+    addr = prompt(card, 'Address', '', color)
+    set_color = prompt_choices(card, 'Color', '', ['True', 'False'], color)
+    post_prompt = prompt_choices(card, 'Post Prompt', '', ['True', 'False'], color)
+    if addr and addr != str():
+        set('addr', addr)
+    if set_color and set_color != str():
+        set('color', set_color)
+    if post_prompt and post_prompt != str():
+        set('post-prompt', post_prompt)
+    success(card, 'Set Dixi configuration', color)
     timeout(2)

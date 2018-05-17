@@ -3,7 +3,7 @@ import sys
 import random
 import math
 # from dixi.pannel import Pannel
-from dixi.input import getch
+from dixi.input import getch, getinput
 from dixi.color import get_color, brighten
 from dixi.markdown import render
 
@@ -39,8 +39,38 @@ def prompt(card, name, description, color):
             card.print(ch, end='')
             sys.stdout.flush()
             value += ch
+        elif ord(ch) == 27:
+            return None
         card.move_to((-1, 2))
     return value
+
+def prompt_choices(card, name, description, choices, color):
+    if description is not str():
+        description = '[' + get_color(15, False, color) + description + get_color(6, False, color) + ']'
+    card.print(get_color(6, False, color) + name + description + ": " + get_color('default', False, color), end='')
+    sel = 0
+    card.move_to((-1, 2))
+    while True:
+        card.pop()
+        card.print(get_color(6, False, color) + name + description + ": " + get_color('default', False, color), end='')
+        for i, it in enumerate(choices):
+            if i == sel:
+                card.print("\033[7m" + it + '\033[27m', end=' ')
+            else:
+                card.print(it, end=' ')
+        ch = getinput()
+        if ch == 'ENTER':
+            card.print()
+            break
+        elif ch == 'RIGHT' and sel < len(choices) - 1:
+            sel += 1
+        elif ch == 'LEFT' and sel > 0:
+            sel -= 1
+        elif ch == 'ESCAPE':
+            card.print()
+            return None
+    return choices[sel]
+
 
 def prompt_secure(card, name, description, color):
     if description is not str():
@@ -62,6 +92,8 @@ def prompt_secure(card, name, description, color):
             card.print("*", end='')
             sys.stdout.flush()
             value += ch
+        elif ord(ch) == 27:
+            return None
         card.move_to((-1, 2))
     return value
 
@@ -96,7 +128,7 @@ def action(card, msg, color, verify=False):
         card.print("\033[1m" + get_color(13, False, color) + msg + "[Y/N]: \033[21m" + get_color('default', False, color), end='')
         yn = getch()
         card.print(yn)
-        if(yn.lower() in ('y', 'yes')):
+        if (yn.lower() in ('y', 'yes')) or ord(yn) == 13:
             return True
         else:
             return False
@@ -119,7 +151,8 @@ def print_user(usr, color):
         rgb = (128, 128, 128)
     return get_color(rgb, False, color) + usr + get_color('default', False, color)
 
-def print_message(card, data, longest, color, width=80):
+def print_message(card, data, longest, color):
+    width = card.dim[1]
     usr = print_user(data['author'], color)
     usr = usr + (' ' * (longest - len(data['author'])))
     body = render(data['body'], width - (longest + 2), color).replace('\n', '\n' + (' ' * (longest + 2)))
