@@ -40,6 +40,14 @@ module.exports.createUser = function(newUser, done){
   });
 }
 
+module.exports.deleteUser = function(username, done){
+  User.find({name: username}).remove(done);
+}
+
+module.exports.deleteUserById = function(id, done){
+  User.find({id: id}).remove(done);
+}
+
 module.exports.getUserByName = function(username, callback){
   var query = {name: username};
   User.findOne(query, callback);

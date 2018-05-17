@@ -15,10 +15,13 @@ router.get('/', function(req, res, next) {
     updated.setDate(updated.getDate() - 14);
   }
   updated = updated.getTime();
-  response = {}
+  response = {
+    'users': []
+  }
   Channel.getChannels(req.user.name, function(err, channels) {
     if (err) console.log(err);
     channels.forEach(function(channel) {
+      response.users = response.users.concat(channel.users);
       var title = channel.title;
       response[title] = [];
       for (var i = channel.messages.length - 1; i >= 0; --i) {
@@ -33,6 +36,9 @@ router.get('/', function(req, res, next) {
           time: msg.date.getTime()
         });
       }
+    });
+    response.users = response.users.filter(function(item, pos) {
+      return response.users.indexOf(item) == pos
     });
     response.update = Date.now();
     res.json(response);
@@ -50,10 +56,13 @@ router.get('/update', function(req, res, next) {
     updated.setDate(updated.getDate() - 14);
   }
   updated = updated.getTime();
-  response = {}
+  response = {
+    'users': []
+  }
   Channel.getChannels(req.user.name, function(err, channels) {
     if (err) console.log(err);
     channels.forEach(function(channel) {
+      response.users = response.users.concat(channel.users)
       var title = channel.title;
       response[title] = [];
       for (var i = channel.messages.length - 1; i >= 0; --i) {
@@ -68,6 +77,9 @@ router.get('/update', function(req, res, next) {
           time: msg.date.getTime()
         });
       }
+    });
+    response.users = response.users.filter(function(item, pos) {
+      return response.users.indexOf(item) == pos
     });
     response.update = Date.now();
     res.json(response);
@@ -85,9 +97,9 @@ router.post('/post', function(req, res, next) {
     if (err) console.log(err);
     Channel.post(channel, req.user.name, req.body.message);
     res.json({
-      channel: channel.name,
-      user: req.user.name,
-      post: req.body.message
+      author: req.user.name,
+      body: req.body.message,
+      time: Date.now()
     });
   });
 });
@@ -96,18 +108,29 @@ router.post('/:channel/post', function(req, res, next) {
   if (!req.user) return res.json({
     error: "must be logged in for channels"
   });
-  Channel.getChannelById(req.session.channel, function(err, channel) {
+  Channel.channelExists(req.params.channel, function(err, result) {
     if (err) console.log(err);
-    if (chennel.users.includes(req.user)) {
-      Channel.post(channel, req.user.name, req.body.message);
-      res.json({
-        channel: channel.name,
-        user: req.user.name,
-        post: req.body.message
+    if (result) {
+      Channel.getChannelByName(req.params.channel, function(err, channel) {
+        if (err) console.log(err);
+        if (channel.users.includes(req.user.name) || channel.open === true) {
+          Channel.post(channel, req.user.name, req.body.message);
+          res.json({
+            author: req.user.name,
+            body: req.body.message,
+            time: Date.now()
+          });
+        } else {
+          res.json({
+            error: "channel not found",
+            channel: req.params.channel
+          });
+        }
       });
     } else {
       res.json({
-        error: "channel not found"
+        error: "channel not found",
+        channel: req.params.channel
       });
     }
   });
@@ -149,6 +172,7 @@ router.get('/:channel', function(req, res, next) {
         }
         res.json({
           time: Date.now(),
+          users: channel.users,
           messages: messages
         });
       });

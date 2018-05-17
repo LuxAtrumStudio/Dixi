@@ -42,9 +42,16 @@ passport.deserializeUser(function(id, done) {
 router.get('/list', function(req, res, next) {
   User.getUsers(function(err, results) {
     if (err) console.log(err);
-    res.json({
-      users: results.map(x => x.name)
-    });
+    if (req.user) {
+      res.json({
+        current: req.user.name,
+        users: results.map(x => x.name)
+      });
+    } else {
+      res.json({
+        users: results.map(x => x.name)
+      });
+    }
   });
 });
 
@@ -98,8 +105,38 @@ router.post('/register', function(req, res, next) {
   }
 });
 
+router.get('/delete', function(req, res, next){
+  if (!req.user) return res.json({
+    error: "must be logged in to delete user"
+  });
+  User.deleteUser(req.user.name, function(err){
+    if(err) console.log(err);
+    res.json({
+      success: true,
+      user: req.user.name
+    });
+  });
+});
+
+router.post('/delete', function(req, res, next){
+  if(!req.user || req.user.name !== 'Admin') return res.json({
+    error: "must be admin to delete users"
+  });
+  var user = req.body.name;
+  User.deleteUser(user, function(err){
+    if(err) console.log(err);
+    res.json({
+      success: true,
+      user: user
+    });
+  });
+});
+
 router.post('/login', passport.authenticate('local'), function(req, res, next) {
-  res.json({ success: true, name: req.user.name });
+  res.json({
+    success: true,
+    name: req.user.name
+  });
 });
 
 router.get('/current', function(req, res, next) {

@@ -12,9 +12,13 @@ var mongoose = require('mongoose');
 var session = require('express-session');
 var passport = require('passport');
 
+var schedule = require('node-schedule');
+var jobs = require('./jobs');
+
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var channelsRouter= require('./routes/channels');
+var adminRouter = require('./routes/admin');
 
 var app = express();
 
@@ -47,25 +51,25 @@ app.use(passport.session());
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/channels', channelsRouter);
+app.use('/admin', adminRouter);
 
-// catch 404 and forward to error handler
+var j = schedule.scheduleJob('0 3 * * *', function(){
+  jobs.prune();
+});
+
 app.use(function(req, res, next) {
   next(createError(404));
 });
 
-// error handler
 app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  // render the error page
   res.status(err.status || 500);
-  // res.json({error: err.status || 500, message: err.message})
-  res.render('error');
+  res.json({error: err.status || 500, message: err.message})
 });
 
-var mongoDB = 'mongodb://localhost/chat';
+var mongoDB = 'mongodb://localhost/dixi';
 mongoose.connect(mongoDB);
 mongoose.Promise = global.Promise;
 var db = mongoose.connection;

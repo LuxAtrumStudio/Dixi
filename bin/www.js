@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/home/arden/.nvm/versions/node/v8.0.0/bin/node
 
 /**
  * Module dependencies.
