@@ -5,114 +5,213 @@ import sys
 import dixi.config
 import dixi.user
 import dixi.channel
-import dixi.view
-from dixi.output import error
+# import dixi.view
+from dixi.output import print_user
+from dixi.input import getinput
 
-def set_default_subparser(self, name, args=None):
-    """default subparser selection. Call after setup, just before parse_args()
-    name: is the name of the subparser to call by default
-    args: if set is the argument list handed to parse_args()
+from dixi.pannel import Pannel
 
-    , tested with 2.7, 3.2, 3.3, 3.4
-    it works with 2.6 assuming argparse is installed
-    """
-    subparser_found = False
-    existing_default = False
-    for arg in sys.argv[1:]:
-        if arg in ['-h', '--help']:
-            break
+rows, columns = os.popen("stty size", "r").read().split()
+rows = int(rows)
+columns = int(columns)
+
+PANNELS = {
+        'menu': {
+            'pannel': Pannel('\033[1mDIXI\033[0m', (3, columns - 2), (1, 1)),
+            'options': [],
+            'selection': 0,
+            'endchar': ' '
+            },
+        'channels': {
+            'pannel': Pannel('\033[1mChannels\033[0m', ((rows - 5) // 2, 15), (4, 1)),
+            'options': [],
+            'selection': 0,
+            'endchar': '\n'
+            },
+        'users': {
+            'pannel': Pannel("\033[1mUsers\033[0m", ((rows - 5) // 2, 15), (4 + ((rows - 5) // 2), 1)),
+            'options': [],
+            'selection': -1,
+            'endchar': '\n'
+            },
+        'main':{
+            'pannel': Pannel('', (rows - 2 - 3 - 5, columns - 2 - 15), (4, 16)),
+            },
+        'entry': {
+            'pannel': Pannel('', (5, columns - 2 - 15), (rows - 6, 16))
+            }
+        }
+pannel = 'entry'
+
+def write_options(pannel):
+    global PANNELS
+    PANNELS[pannel]['pannel'].clear()
+    for i, opt in enumerate(PANNELS[pannel]['options']):
+        if i == PANNELS[pannel]['selection']:
+            PANNELS[pannel]['pannel'].print("\033[7m" + opt + "\033[0m", end=PANNELS[pannel]['endchar'])
+        else:
+            PANNELS[pannel]['pannel'].print(opt, end=PANNELS[pannel]['endchar'])
+
+def load_menu():
+    global PANNELS
+    current_user = dixi.config.get('user')
+    if current_user:
+        PANNELS['menu']['options'] = ['Logout', 'Delete', 'Config', 'Quit']
     else:
-        for x in self._subparsers._actions:
-            if not isinstance(x, argparse._SubParsersAction):
-                continue
-            for sp_name in x._name_parser_map.keys():
-                if sp_name in sys.argv[1:]:
-                    subparser_found = True
-                if sp_name == name:
-                    existing_default = True
-        if not subparser_found:
-            if not existing_default:
-                for x in self._subparsers._actions:
-                    if not isinstance(x, argparse._SubParsersAction):
-                        continue
-                    x.add_parser(name)
-                    break
-            if args is None:
-                sys.argv.insert(1, name)
-            else:
-                args.insert(0, name)
+        PANNELS['menu']['options'] = ['Login', 'Register', 'Config', 'Quit']
+    write_options('menu')
+
+def load_channel():
+    global PANNELS
+    if dixi.config.get('user'):
+        channels = dixi.channel.list()
+    else:
+        channels = ["No channels available for {}".format(dixi.config.get('user'))]
+    PANNELS['channels']['options'] = channels
+    write_options('channels')
+
+def load_user():
+    global PANNELS
+    users = [" " + print_user(x, True) if x != dixi.config.get('user') else '\033[1m[' + print_user(x, True) + ']\033[0m' for x in dixi.user.list()]
+    PANNELS['users']['options'] = users
+    write_options('users')
+
+def load():
+    if not dixi.user.current():
+        dixi.config.set('user')
+        dixi.config.set('cookies')
+    load_menu()
+    load_channel()
+    load_user()
+    if dixi.config.get('user'):
+        PANNELS['entry']['pannel'].set_title(print_user(dixi.config.get('user'), True))
+    else:
+        PANNELS['entry']['pannel'].set_title('')
+
+def move_select(key):
+    global PANNELS
+    global pannel
+    if 'selection' in PANNELS[pannel] and PANNELS[pannel]['selection'] != -1:
+        if PANNELS[pannel]['endchar'] == ' ':
+            if key == 'RIGHT' and PANNELS[pannel]['selection'] != len(PANNELS[pannel]['options']) - 1:
+                PANNELS[pannel]['selection'] += 1
+            elif key == 'LEFT' and PANNELS[pannel]['selection'] > 0:
+                PANNELS[pannel]['selection'] -= 1
+        elif PANNELS[pannel]['endchar'] == '\n':
+            if key == 'DOWN' and PANNELS[pannel]['selection'] != len(PANNELS[pannel]['options']) - 1:
+                PANNELS[pannel]['selection'] += 1
+            elif key == 'UP' and PANNELS[pannel]['selection'] > 0:
+                PANNELS[pannel]['selection'] -= 1
+        write_options(pannel)
+
+def move(key):
+    global PANNELS
+    global pannel
+    PANNELS[pannel]['pannel'].toggle_bold()
+    if key == 'ESCAPE':
+        if pannel == 'menu':
+            pannel = 'entry'
+        else:
+            pannel = 'menu'
+    elif key == 'q':
+        print('\033[2J')
+        dixi.config.save_config()
+        sys.exit(0)
+    move_select(key)
+    PANNELS[pannel]['pannel'].toggle_bold()
+
+def action(key):
+    global PANNELS
+    global pannel
+    clean = False
+    if 'options' in PANNELS[pannel] and PANNELS[pannel]['selection'] != -1:
+        clean = True
+        option = PANNELS[pannel]['options'][PANNELS[pannel]['selection']]
+        if option == 'Login':
+            dixi.user.login(True)
+            load()
+        elif option == 'Register':
+            dixi.user.register(True)
+            load()
+        elif option == 'Logout':
+            dixi.user.logout(True)
+            load()
+        elif option == 'Delete':
+            dixi.user.delete(True)
+            load()
+        elif option == 'Config':
+            dixi.config.addr(True)
+            load()
+        elif option == 'Quit':
+            print('\033[2J')
+            dixi.config.save_config()
+            sys.exit(0)
+
+    if clean:
+        print('\033[2J', end='')
+        for key, value in PANNELS.items():
+            value['pannel'].init = True
+
 
 def main():
-    argparse.ArgumentParser.set_default_subparser = set_default_subparser
-    parser = argparse.ArgumentParser(description="Dixi-CLI")
-    subparser = parser.add_subparsers( help='Different actions to preform', dest='command')
+    global PANNELS
+    global pannel
+    print('\033[2J', end='')
+    dixi.config.load_config()
+    load()
+    PANNELS[pannel]['pannel'].toggle_bold()
+    while True:
+        for key, val in PANNELS.items():
+            val['pannel'].render()
+        key = getinput()
+        if key == 'ENTER':
+            action(key)
+        else:
+            move(key)
 
-    # >>>>>>>>>> VIEW <<<<<<<<< #
-    view = subparser.add_parser('view', help='View recent posts')
-    view.add_argument('channel', nargs='?', help='Channel to view posts from')
-    view.add_argument('-p', '--post', action='store_true', help='Enables post prompt')
-    view.add_argument('-a', '--all', action='store_true', help='Sends post to all channels')
-    view.add_argument('-s', '--server', action='store_true', help='Sends post as server')
-    view.add_argument('--no-color', action='store_false', dest='color', help='Disable color in output')
-    view.add_argument('body', nargs='*', help='String to post')
-
-    # >>>>>>>>>> USER <<<<<<<<< #
-    user = subparser.add_parser('user', help='Manage user profile')
-    user_subparser = user.add_subparsers(help='Different user based actions to preform', dest='user_command')
-
-    # >>>>> REGISTER <<<<< #
-    register = user_subparser.add_parser('register', help='Register new user account')
-    register.add_argument('name', nargs='?', help='Username')
-    register.add_argument('email', nargs='?', help='Recovery email address')
-    register.add_argument('password', nargs='?', help='Password')
-    register.add_argument('password2', nargs='?', help='Password Confirmation')
-    register.add_argument('--no-color', action='store_false', dest='color', help='Disable color in output')
-
-    # >>>>> LOGIN <<<<< #
-    login = user_subparser.add_parser('login', help='Login to user account')
-    login.add_argument('name', nargs='?', help='Username')
-    login.add_argument('password', nargs='?', help='Password')
-    login.add_argument('--no-color', action='store_false', dest='color', help='Disable color in output')
-
-    # >>>>> LOGOUT <<<<< #
-    logout = user_subparser.add_parser('logout', help='Logout from user account')
-    logout.add_argument('--no-color', action='store_false', dest='color', help='Disable color in output')
-
-    # >>>>> DELETE <<<<< #
-    user_delete = user_subparser.add_parser('delete', help='Delete user account')
-    user_delete.add_argument('name', nargs='?', help='User account to delete[Current]')
-    user_delete.add_argument('--no-color', action='store_false', dest='color', help='Disable color in output')
-
-    # >>>>>>>>>> CHANNEL <<<<<<<<<< #
-    channel = subparser.add_parser('channel', help='Manage channels')
-    channel_subparser = channel.add_subparsers(help='Different channel based actions to preform', dest='channel_command')
-
-    # >>>>> CREATE <<<<< #
-    create = channel_subparser.add_parser('create', help='Create a new channel')
-    create.add_argument('title', nargs='?', help='Channel title')
-    create.add_argument('users', nargs='*', help='Users who will have access to the channel')
-    create.add_argument('--no-color', action='store_false', dest='color', help='Disable color in output')
-
-    # >>>>> DELETE <<<<< #
-    channel_delete = channel_subparser.add_parser('delete', help='Delete channel')
-    channel_delete.add_argument('channel', nargs='?', help='Channel to delete')
-    channel_delete.add_argument('--no-color', action='store_false', dest='color', help='Disable color in output')
-
-    # >>>>>>>>>> CONFIG <<<<<<<<<< #
-    config = subparser.add_parser('config', help='Manage configuration')
-    config.add_argument('--addr', help='Default host address')
-    config.add_argument('--no-color', action='store_false', dest='color', help='Disable color in output')
-
-    parser.set_default_subparser('view')
-    args = parser.parse_args()
-    if args.command != 'config' and not dixi.config.exists('addr'):
-        error('Must set host address before accessing server', args.color)
-        sys.exit(7)
-    if args.command == 'user':
-        dixi.user.main(args)
-    elif args.command == 'channel':
-        dixi.channel.main(args)
-    elif args.command == 'view':
-        dixi.view.main(args)
-    elif args.command == 'config':
-        dixi.config.main(args)
+    # while True:
+    #     for key, val in pannels.items():
+    #         if key in options:
+    #             endch = '\n'
+    #             if key == 'menu':
+    #                 endch = ' '
+    #             val.clear()
+    #             for i, op in enumerate(options[key]):
+    #                 if i == selection[key]:
+    #                     val.print('\033[7m' + op + '\033[27m', end=endch)
+    #                 else:
+    #                     val.print(op, end=endch)
+    #         val.render()
+    #     pannels['entry'].move_to((2,2))
+    #     key = getinput()
+    #     if key == 'q':
+    #         break
+    #     elif key == 'ESCAPE':
+    #         pannels[pannel].toggle_bold()
+    #         if pannel != 'menu':
+    #             pannel = 'menu'
+    #         else:
+    #             pannel = 'entry'
+    #         pannels[pannel].toggle_bold()
+    #     elif key.startswith('CTRL_'):
+    #         pannels[pannel].toggle_bold()
+    #         pannel = move(key, pannel)
+    #         pannels[pannel].toggle_bold()
+    #     elif pannel == 'menu':
+    #         if key == 'RIGHT' and selection[pannel] < len(options[pannel]) - 1:
+    #             selection[pannel] += 1
+    #         elif key == 'LEFT' and selection[pannel] > 0:
+    #             selection[pannel] -= 1
+    #         elif key == 'ENTER':
+    #             menu_select(selection[pannel], options[pannel])
+    #             print('\033[2J', end='')
+    #             for key, val in pannels.items():
+    #                 val.init = True
+    #     elif pannel == 'side':
+    #         if key == 'UP' and selection[pannel] > 0:
+    #             selection[pannel] -= 1
+    #         elif key == 'DOWN' and selection[pannel] < len(options[pannel]) - 1:
+    #             selection[pannel] += 1
+    #     pannels['main'].print(key)
+    dixi.config.save_config()
+    print('\033[2J')

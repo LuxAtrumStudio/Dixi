@@ -29,8 +29,9 @@ def delete(args):
     success('Deleted Channel {}'.format(args.channel), args.color)
 
 
-def main(args):
-    if args.channel_command == 'create':
-        create(args)
-    elif args.channel_command == 'delete':
-        delete(args)
+def list():
+    content = requests.get("http://{}/channels/list".format(dixi.config.get('addr')), cookies=dixi.config.get('cookies')).json()
+    if 'error' in content:
+        return []
+    return content['channels']
+
