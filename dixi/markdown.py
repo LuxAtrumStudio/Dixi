@@ -19,7 +19,7 @@ def render(markdown, width=80, color=True):
             if line == blocks[block][2]:
                 block = None
                 continue
-            line = get_color(blocks[block][0], False, color) + blocks[block][1] + line + '\n' + get_color('default', False, color)
+            line = get_color(blocks[block][0], False, color) + blocks[block][1] + line + get_color('default', False, color) + '\n'
             state = block
         if not state:
             for i, head in enumerate(headers):
@@ -32,7 +32,7 @@ def render(markdown, width=80, color=True):
                 line = get_color(7, False, color)
             else:
                 line = get_color(6, False, color)
-            line += '\u2500' * width + '\n' + get_color('default', False, color)
+            line += '\u2500' * width + get_color('default', False, color) + '\n'
             state = 'sep'
         if not state and line.startswith('> '):
             state = 'quote'
@@ -74,10 +74,12 @@ def render(markdown, width=80, color=True):
                 line = ''
                 for ch in cp.split(' '):
                     if length + len(ch) + 1 >= width:
-                        line += '\n'
+                        line += '\n' + ch
                         length = 0
-                    line += ' ' + ch
+                    else:
+                        line += ' ' + ch
                     length += len(ch) + 1
+                line = line[1:]
             line += '\n'
         response += line
     return response[:-1] + "\033[0m"

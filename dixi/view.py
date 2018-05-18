@@ -13,7 +13,7 @@ def channels(args):
     if len(content['channels']) == 0:
         warning('no channels available to user', args.color)
     else:
-        print_set([" * {}".format(x) for x in content['channels']])
+        print_set([" \u25cf {}".format(x) for x in content['channels']])
 
 def users(args):
     action('Getting User List', args.color)
@@ -22,9 +22,9 @@ def users(args):
     data = []
     for usr in sorted(content['users']):
         if usr == current:
-            data.append('\033[1m * [{}]\033[0m'.format(print_user(usr, args.color)))
+            data.append('\033[1m \u25cf [{}]\033[0m'.format(print_user(usr, args.color)))
         else:
-            data.append(' * {}'.format(print_user(usr, args.color)))
+            data.append(' \u25cf {}'.format(print_user(usr, args.color)))
     if (len(data) == 0):
         warning('no users', args.color)
     else:

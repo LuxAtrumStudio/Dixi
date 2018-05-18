@@ -137,7 +137,8 @@ def print_set(items):
     for i in range(0, len(max(groups, key=len))):
         for li in groups:
             if len(li) > i and li[i] is not None:
-                print("{:{}}".format(li[i], width), end='')
+                print(li[i], ' ' * (width - display_length(li[i])), sep='', end='')
+                # print("{:{}}".format(li[i], width), end='')
             else:
                 print(" " * (width + 3), end='')
         print('')
