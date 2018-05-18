@@ -132,7 +132,7 @@ def load_channel():
 def load_user():
     global PANNELS
     global longest
-    users = dixi.user.list()
+    users = sorted(dixi.user.list())
     longest = len(max(users, key=len))
     if dixi.config.get('user'):
         current = users.index(dixi.config.get('user'))
