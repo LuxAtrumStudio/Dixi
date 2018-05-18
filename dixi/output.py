@@ -153,7 +153,7 @@ def print_user(usr, color):
     return get_color(rgb, False, color) + usr + get_color('default', False, color)
 
 def print_message(card, data, longest, color):
-    width = card.dim[1]
+    width = card.dim[1] - 2
     usr = print_user(data['author'], color)
     usr = usr + (' ' * (longest - len(data['author'])))
     body = render(data['body'], width - (longest + 2), color).replace('\n', '\n' + (' ' * (longest + 2)))

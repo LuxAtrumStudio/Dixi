@@ -18,7 +18,10 @@ def gen_card(name, lines):
     return card
 
 def posts(color, update):
-    content= requests.get("http://{}/".format(dixi.config.get('addr')), cookies=dixi.config.get('cookies')).json()
+    if not update:
+        content= requests.get("http://{}/".format(dixi.config.get('addr')), cookies=dixi.config.get('cookies')).json()
+    else:
+        content = requests.get("http://{}/".format(dixi.config.get('addr')), params={'update': update}, cookies=dixi.config.get('cookies')).json()
     posts = {}
     if 'error' in content:
         return {}, {}, None

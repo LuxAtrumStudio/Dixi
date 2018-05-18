@@ -27,8 +27,8 @@ class Pannel(object):
         self.lines = []
         self.appendable = False
         if full:
-            for i in range(1, self.dim[0] - 1):
-                print(self.rel_pos(i,1), ' ' * (self.dim[1] - 2), sep='')
+            for i in range(1, self.dim[0]):
+                print(self.rel_pos(i,1), ' ' * (self.dim[1]), sep='')
 
     def pop(self):
         self.lines[-1] = ''

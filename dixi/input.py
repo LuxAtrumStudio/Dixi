@@ -56,7 +56,14 @@ def timeout(sec):
         pass
     return None
 
-def getinput():
+def getinput(sec = None):
+    if sec is not None:
+        try:
+            with Timeout(sec):
+                return getinput()
+        except:
+            pass
+        return None
     key = getch()
     if ord(key) == 27:
         ch = timeout(0.05)

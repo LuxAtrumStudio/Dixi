@@ -7,6 +7,7 @@ import dixi.user
 import dixi.channel
 import dixi.view
 import dixi.markdown
+from dixi.color import get_color
 from dixi.output import print_user, print_message, display_length
 from dixi.input import getinput, timeout
 
@@ -45,6 +46,8 @@ PANNELS = {
 
 POSTS = {}
 
+CHANNELS = {}
+
 pannel = 'entry'
 longest = 0
 current_channel = None
@@ -69,6 +72,7 @@ def close():
 
 def write_options(pannel):
     global PANNELS
+    global CHANNELS
     PANNELS[pannel]['pannel'].clear()
     for i, opt in enumerate(PANNELS[pannel]['options']):
         fmt = '{}'
@@ -76,6 +80,11 @@ def write_options(pannel):
             width = PANNELS[pannel]['pannel'].dim[1] // len(PANNELS[pannel]['options'])
             fmt = (' ' * ((width - len(opt)) // 2)) + fmt
             fmt += (' ' * (width - (len(fmt) - 2 + len(opt) + 2)))
+        elif pannel == 'channels':
+            if opt in CHANNELS and CHANNELS[opt] is False:
+                fmt = ' ' + get_color(10, False, dixi.config.get('color')) + '\u25cf' + get_color('default', False, dixi.config.get('color')) + ' {}'
+            else:
+                fmt = '   {}'
         if i == PANNELS[pannel]['selection']:
             PANNELS[pannel]['pannel'].print(fmt.format("\033[7m" + opt + "\033[27m"), end=PANNELS[pannel]['endchar'])
         else:
@@ -83,7 +92,19 @@ def write_options(pannel):
 
 def load_posts():
     global POSTS
-    POSTS, users, update = dixi.view.posts(dixi.config.get('color'), dixi.config.get('update'))
+    global CHANNELS
+    global current_channel
+    posts, users, update = dixi.view.posts(dixi.config.get('color'), dixi.config.get('update'))
+    for key, value in posts.items():
+        if value and key != current_channel:
+            CHANNELS[key] = False
+        elif value and key == current_channel:
+            current_channel = None
+        if key in POSTS:
+            POSTS[key] += value
+        else:
+            POSTS[key] = value
+    load_channel()
     dixi.config.set('update', update)
 
 def load_menu():
@@ -98,6 +119,7 @@ def load_menu():
 
 def load_channel():
     global PANNELS
+    global CHANNELS
     if dixi.config.get('user'):
         channels = dixi.channel.list()
     else:
@@ -119,9 +141,9 @@ def load():
         dixi.config.set('user')
         dixi.config.set('cookies')
     load_menu()
+    load_posts()
     load_channel()
     load_user()
-    load_posts()
     if dixi.config.get('user'):
         PANNELS['entry']['pannel'].set_title(print_user(dixi.config.get('user'), dixi.config.get('color')))
     else:
@@ -196,6 +218,7 @@ def action(key):
 
 def display_channel():
     global PANNELS
+    global CHANNELS
     global POSTS
     global longest
     global current_channel
@@ -209,6 +232,8 @@ def display_channel():
         channel = PANNELS['channels']['options'][PANNELS['channels']['selection']]
     if current_channel == channel:
         return
+    if channel in CHANNELS and CHANNELS[channel] is False:
+        CHANNELS[channel] = True
     PANNELS['main']['pannel'].clear(True)
     current_channel = channel
     if channel != 'No channels available for None':
@@ -265,11 +290,13 @@ def main():
         for key, val in PANNELS.items():
             val['pannel'].render()
         PANNELS['entry']['pannel'].move_to((6, 2))
-        key = getinput()
+        key = getinput(10)
+        if key is None:
+            load_posts()
         if key == 'ENTER':
             action(key)
         else:
             move(key)
-        if pannel == 'entry':
+        if key is not None and pannel == 'entry':
             message(key)
     close()
