@@ -13,6 +13,7 @@ def gen_card(name, lines):
     columns = int(columns)
     lines += 2
     card = Pannel('\033[1m{}\033[0m'.format(name), (lines, columns // 4), ((rows - lines) // 2, (columns - (columns // 4)) // 2))
+    card.clear(True)
     card.render()
     return card
 

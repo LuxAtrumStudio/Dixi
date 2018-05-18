@@ -16,6 +16,7 @@ class Pannel(object):
         self.bold = False
         self.appendable = False
         self.cursor = -1
+        self.scroll = 3
 
     def resize(self, dim):
         self.dim = dim
@@ -27,7 +28,7 @@ class Pannel(object):
         self.lines = []
         self.appendable = False
         if full:
-            for i in range(1, self.dim[0]):
+            for i in range(1, self.dim[0] + 1):
                 print(self.rel_pos(i,1), ' ' * (self.dim[1]), sep='')
 
     def pop(self):
@@ -104,16 +105,31 @@ class Pannel(object):
             self.cursor = -1
         self.init = True
 
-    def cursor_up(self):
-        if self.cursor > 0:
-            self.cursor -= 1
+    def cursor_set(self, pos=None):
+        if pos:
+            self.cursor = pos
+        else:
+            self.cursor = 0
+    def cursor_up(self, dist=None):
+        if dist:
+            for i in range(dist):
+                if self.cursor > 0:
+                    self.cursor -= 1
+        else:
+            if self.cursor > 0:
+                self.cursor -= 1
 
-    def cursor_down(self):
+    def cursor_down(self, dist=None):
         display = self.get_display()
         if self.cursor == -1:
             return
-        if self.cursor + self.dim[0] - 3 <= len(display):
-            self.cursor += 1
+        if dist:
+            for i in range(dist):
+                if self.cursor + self.dim[0] - self.scroll <= len(display):
+                    self.cursor += 1
+        else:
+            if self.cursor + self.dim[0] - self.scroll <= len(display):
+                self.cursor += 1
 
     def get_display(self):
         display_lines = []
@@ -148,10 +164,10 @@ class Pannel(object):
                 count = len(display_lines)
                 start = count - self.dim[0]
                 for i in range(count - self.dim[0] + 2, count):
-                    print(self.rel_pos(i-start, 2), display_lines[i], ' ' * (self.dim[1] - 2 - len(display_lines[i])), sep='')
+                    print(self.rel_pos(i-start, 2), display_lines[i], ' ' * (self.dim[1] - 2 - display_length(display_lines[i])), sep='')
             else:
                 count = len(display_lines)
                 start = self.cursor
                 for i in range(self.cursor, min(count, start + self.dim[0] - 2)):
-                    print(self.rel_pos(i-start+2, 2), display_lines[i], ' ' * (self.dim[1] - 2 - len(display_lines[i])), sep='')
+                    print(self.rel_pos(i-start+2, 2), display_lines[i], ' ' * ((self.dim[1] - 2) - display_length(display_lines[i])),sep='')
 

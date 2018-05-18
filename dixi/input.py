@@ -85,6 +85,26 @@ def getinput(sec = None):
                             return 'CTRL_RIGHT'
                         elif ord(ch) == 68:
                             return 'CTRL_LEFT'
+                    elif ord(ch) == 50:
+                        ch = timeout(0.05)
+                        if ord(ch) == 65:
+                            return 'SHIFT_UP'
+                        elif ord(ch) == 66:
+                            return 'SHIFT_DOWN'
+                        elif ord(ch) == 67:
+                            return 'SHIFT_RIGHT'
+                        elif ord(ch) == 68:
+                            return 'SHIFT_LEFT'
+                    elif ord(ch) == 51:
+                        ch = timeout(0.05)
+                        if ord(ch) == 65:
+                            return 'ALT_UP'
+                        elif ord(ch) == 66:
+                            return 'ALT_DOWN'
+                        elif ord(ch) == 67:
+                            return 'ALT_RIGHT'
+                        elif ord(ch) == 68:
+                            return 'ALT_LEFT'
             elif ord(ch) == 51:
                 ch = timeout(0.05)
                 if ord(ch) == 126:
@@ -105,3 +125,9 @@ def getinput(sec = None):
         return 'BACKSPACE'
     else:
         return key
+
+if __name__ == "__main__":
+    key = None
+    while key != 'q':
+        key = getch()
+        print(ord(key))
