@@ -1,8 +1,7 @@
 import os
 import sys
-import random
 import math
-# from dixi.pannel import Pannel
+import dixi.rand as rand
 from dixi.input import getch, getinput
 from dixi.color import get_color, brighten
 from dixi.markdown import render
@@ -144,8 +143,8 @@ def success(card, msg, color=False):
     card.print(get_color(10, False, color) + "Success: " + msg.title() + get_color('default', False, color))
 
 def print_user(usr, color):
-    random.seed(usr)
-    rgb = sorted([0, random.randint(0, 256), random.randint(0, 256), 256])
+    rand.seed(usr)
+    rgb = sorted([0, rand.rand(0, 256), rand.rand(0, 256), 256])
     rgb = [rgb[i+1] - rgb[i] for i in range(0, len(rgb) - 1)]
     rgb = brighten(rgb, 0.5)
     if usr == 'Dixi' or usr == 'Admin':
