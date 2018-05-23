@@ -9,7 +9,7 @@ var os = require('os');
 
 var mongoose = require('mongoose');
 
-var session = require('express-session');
+var session = require('cookie-session');
 var passport = require('passport');
 
 var schedule = require('node-schedule');
@@ -34,10 +34,10 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(session({
-  secret: 'keyboard cat',
+  name: 'session',
+  secret: 'session-secret-key',
   resave: false,
   saveUninitialized: true,
-  channel: null,
 }));
 
 app.use(formParser.parse({uploadDir: os.tmpdir(), autoClean: true}));
