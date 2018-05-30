@@ -10,7 +10,10 @@ def create(args):
     if args.users == []:
         args.users = prompt('Users', '', args.color).split(' ')
     action('Creating Channel {}'.format(args.title), args.color)
-    response = requests.post('http://{}/channels/create'.format(dixi.config.get('addr')), data={'title': args.title, 'users': ','.join(args.users)}, cookies=dixi.config.get('cookies'))
+    try:
+        response = requests.post('http://{}/channels/create'.format(dixi.config.get('addr')), data={'title': args.title, 'users': ','.join(args.users)}, cookies=dixi.config.get('cookies'))
+    except:
+        response = {'error': 'HTTP error'}
     if 'error' in response:
         error(response['error'], args.color)
         sys.exit(4)
@@ -22,7 +25,10 @@ def delete(args):
         args.channel = prompt('Channel', '', args.color)
     if not action('Delete Channel {}'.format(args.channel), args.color, True):
         sys.exit(0)
-    response = requests.post('http://{}/channels/delete'.format(dixi.config.get('addr')), data={'title': args.channel}, cookies=dixi.config.get('cookies')).json()
+    try:
+        response = requests.post('http://{}/channels/delete'.format(dixi.config.get('addr')), data={'title': args.channel}, cookies=dixi.config.get('cookies')).json()
+    except:
+        response = {'error': 'HTTP error'}
     if 'error' in response:
         error(response['error'], args.color)
         sys.exit(8)
