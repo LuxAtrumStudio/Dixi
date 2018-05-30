@@ -30,11 +30,14 @@ def create(color):
     else:
         users = users.split(' ')
     action(card, 'Creating Channel {}'.format(title), color)
-    response = requests.post('http://{}/channels/create'.format(dixi.config.get('addr')), data={'title': title, 'users': ','.join(users)}, cookies=dixi.config.get('cookies'))
+    try:
+        response = requests.post('http://{}/channels/create'.format(dixi.config.get('addr')), data={'title': title, 'users': ','.join(users)}, cookies=dixi.config.get('cookies'))
+    except:
+        response = {'error': 'Invalid url'}
     if 'error' in response:
         error(card, response['error'], color)
-        timeout(dixi.config.get('timeout'))
-    success(card, 'Created Channel {}'.format(title), color)
+    else:
+        success(card, 'Created Channel {}'.format(title), color)
     timeout(dixi.config.get('timeout'))
 
 def delete(color):
@@ -45,17 +48,22 @@ def delete(color):
     if channel is None:
         return
     if action(card, 'Delete Channel {}'.format(channel), color, True):
-        response = requests.post('http://{}/channels/delete'.format(dixi.config.get('addr')), data={'title': channel}, cookies=dixi.config.get('cookies')).json()
+        try:
+            response = requests.post('http://{}/channels/delete'.format(dixi.config.get('addr')), data={'title': channel}, cookies=dixi.config.get('cookies')).json()
+        except:
+            response = {'error': 'Invalid url'}
         if 'error' in response:
             error(card, response['error'], color)
-            timeout(dixi.config.get('timeout'))
-            return
-        success(card, 'Deleted Channel {}'.format(channel), color)
-    timeout(dixi.config.get('timeout'))
+        else:
+            success(card, 'Deleted Channel {}'.format(channel), color)
+        timeout(dixi.config.get('timeout'))
 
 
 def list():
-    content = requests.get("http://{}/channels/list".format(dixi.config.get('addr')), cookies=dixi.config.get('cookies')).json()
+    try:
+        content = requests.get("http://{}/channels/list".format(dixi.config.get('addr')), cookies=dixi.config.get('cookies')).json()
+    except:
+        return []
     if 'error' in content:
         return []
     return content['channels']
