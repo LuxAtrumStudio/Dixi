@@ -53,6 +53,11 @@ app.use('/users', usersRouter);
 app.use('/channels', channelsRouter);
 app.use('/admin', adminRouter);
 
+app.use(express.static(path.join(__dirname, 'client/build')));
+app.get('*', (req, res, next) =>{
+  res.sendFile(path.join(__dirname+'/client/build/index.html'));
+});
+
 var j = schedule.scheduleJob('0 3 * * *', function(){
   jobs.prune();
 });

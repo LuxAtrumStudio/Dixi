@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www.js",
-    "startdev": "nodemon ./bin/www.js"
+    "heroku-postbuild": "cd client && npm install && npm run build",
+    "dev": "nodemon ./bin/www.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
