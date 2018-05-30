@@ -20,9 +20,15 @@ def gen_card(name, lines):
 
 def posts(color, update):
     if not update:
-        content= requests.get("http://{}/".format(dixi.config.get('addr')), cookies=dixi.config.get('cookies')).json()
+        try:
+            content= requests.get("http://{}/".format(dixi.config.get('addr')), cookies=dixi.config.get('cookies')).json()
+        except:
+            return {}, {}, None
     else:
-        content = requests.get("http://{}/".format(dixi.config.get('addr')), params={'update': update}, cookies=dixi.config.get('cookies')).json()
+        try:
+            content = requests.get("http://{}/".format(dixi.config.get('addr')), params={'update': update}, cookies=dixi.config.get('cookies')).json()
+        except:
+            return {}, {}, None
     posts = {}
     if 'error' in content:
         return {}, {}, None
@@ -44,7 +50,10 @@ def post_message(color, message, channel):
         card = gen_card('Post', len(render.split('\n')) + 2)
         card.print(render)
         if action(card, 'Post message to {}'.format(channel), True, color):
-            response = requests.post('http://{}/{}/post'.format(dixi.config.get('addr'), channel), cookies=dixi.config.get('cookies'), data={'message': message}).json()
+            try:
+                response = requests.post('http://{}/{}/post'.format(dixi.config.get('addr'), channel), cookies=dixi.config.get('cookies'), data={'message': message}).json()
+            except:
+                response = {'error': 'Invalid url'}
             if 'error' in response:
                 error(card, response['error'], color)
                 timeout(dixi.config.get('timeout'))
@@ -56,7 +65,10 @@ def post_message(color, message, channel):
         timeout(dixi.config.get('timeout'))
         return False
     else:
-        response = requests.post('http://{}/{}/post'.format(dixi.config.get('addr'), channel), cookies=dixi.config.get('cookies'), data={'message': message}).json()
+        try:
+            response = requests.post('http://{}/{}/post'.format(dixi.config.get('addr'), channel), cookies=dixi.config.get('cookies'), data={'message': message}).json()
+        except:
+            return False
         if 'error' in response:
             return False
         else:

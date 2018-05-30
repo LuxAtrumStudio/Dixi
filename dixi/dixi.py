@@ -133,7 +133,10 @@ def load_user():
     global PANNELS
     global longest
     users = sorted(dixi.user.list())
-    longest = len(max(users, key=len))
+    if(users):
+        longest = len(max(users, key=len))
+    else:
+        longest = 0
     if dixi.config.get('user'):
         current = users.index(dixi.config.get('user'))
     else:

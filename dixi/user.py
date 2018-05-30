@@ -45,7 +45,10 @@ def register(color):
         timeout(dixi.config.get('timeout'))
         return
     action(card, 'Registering User {}'.format(name), color)
-    response = requests.post('http://{}/users/register'.format(dixi.config.get('addr')), data={'name': name, 'email': email, 'password': password, 'password2': password2}).json()
+    try:
+        response = requests.post('http://{}/users/register'.format(dixi.config.get('addr')), data={'name': name, 'email': email, 'password': password, 'password2': password2}).json()
+    except:
+        response = {'error': "Invalid url address"}
     if 'error' in response:
         error(card, response['error'], color)
         timeout(dixi.config.get('timeout'))
@@ -68,7 +71,14 @@ def login(color):
     if password is None:
         return
     action(card, 'Logging in {}'.format(name), color)
-    response = requests.post('http://{}/users/login'.format(dixi.config.get('addr')), data={'username': name, 'password': password})
+    try:
+        response = requests.post('http://{}/users/login'.format(dixi.config.get('addr')), data={'username': name, 'password': password})
+    except:
+        response = {'error': 'Invalid url'}
+    try:
+        response.json()
+    except:
+        return
     if 'success' in response.json():
         success(card, 'Logged in {}'.format(name), color)
         dixi.config.set('cookies', dict(response.cookies))
@@ -93,21 +103,33 @@ def delete(color):
     if not action(card, 'Delete User {}'.format(name if name else 'Current'), color, True):
         sys.exit(0)
     if name:
-        response = requests.post('http://{}/users/delete'.format(dixi.config.get('addr')), data={'name': name}, cookies=dixi.config.get('cookies')).json()
+        try:
+            response = requests.post('http://{}/users/delete'.format(dixi.config.get('addr')), data={'name': name}, cookies=dixi.config.get('cookies')).json()
+        except:
+            response = {'error': 'Invalid url'}
     else:
-        response = requests.get('http://{}/users/delete'.format(dixi.config.get('addr')), cookies=dixi.config.get('cookies')).json()
+        try:
+            response = requests.get('http://{}/users/delete'.format(dixi.config.get('addr')), cookies=dixi.config.get('cookies')).json()
+        except:
+            response = {'error': 'Invalid url'}
     if 'error' in response:
         error(card, response['error'], color)
-        sys.exit(9)
-    success(card, 'Deleted User {}'.format(name), color)
-    if name == dixi.config.get('user'):
-        dixi.config.set('user')
+    else:
+        success(card, 'Deleted User {}'.format(name), color)
+        if name == dixi.config.get('user'):
+            dixi.config.set('user')
     timeout(dixi.config.get('timeout'))
 
 def list():
-    content = requests.get("http://{}/users/list".format(dixi.config.get('addr')), cookies=dixi.config.get('cookies')).json()
+    try:
+        content = requests.get("http://{}/users/list".format(dixi.config.get('addr')), cookies=dixi.config.get('cookies')).json()
+    except:
+        return []
     return content['users']
 
 def current():
-    content = requests.get("http://{}/users/current".format(dixi.config.get('addr')), cookies=dixi.config.get('cookies')).json()
+    try:
+        content = requests.get("http://{}/users/current".format(dixi.config.get('addr')), cookies=dixi.config.get('cookies')).json()
+    except requests.exceptions.RequestException as ex:
+        return False
     return content['loggedin']
