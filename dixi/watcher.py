@@ -8,9 +8,9 @@ from subprocess import Popen
 from requests import get
 
 def main(color, addr, cookies, channel, age, delay):
-    update = int(datetime.now().timestamp() * 1000) - 60000
-    age = (age * 1000) + update
     mili_delay = 3 * (delay * 1000)
+    update = int(datetime.now().timestamp() * 1000) - mili_delay
+    age = (age * 1000) + update
     if channel:
         url = "http://{}/{}/".format(addr, channel)
     else:
@@ -25,6 +25,7 @@ def main(color, addr, cookies, channel, age, delay):
             Popen(['notify-send', 'HTTP error'])
             exit(0)
         update = response['update'] - mili_delay
+        print(response)
         channels = []
         for key, value in response.items():
             if key in ('users', 'update'):
