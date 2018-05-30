@@ -48,10 +48,10 @@ app.use(formParser.union());
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
-app.use('/channels', channelsRouter);
-app.use('/admin', adminRouter);
+app.use('/api/', indexRouter);
+app.use('/api/users', usersRouter);
+app.use('/api/channels', channelsRouter);
+app.use('/api/admin', adminRouter);
 
 app.use(express.static(path.join(__dirname, 'client/build')));
 app.get('*', (req, res, next) =>{
