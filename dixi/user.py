@@ -74,7 +74,11 @@ def login(color):
     try:
         response = requests.post('http://{}/users/login'.format(dixi.config.get('addr')), data={'username': name, 'password': password})
     except:
-        response = {'error': 'Invalid username or url'}
+        response = {'error': 'Invalid url'}
+    try:
+        response.json()
+    except:
+        return
     if 'success' in response.json():
         success(card, 'Logged in {}'.format(name), color)
         dixi.config.set('cookies', dict(response.cookies))
