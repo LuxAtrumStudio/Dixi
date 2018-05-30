@@ -107,7 +107,6 @@ def main(args):
     elif args.channel == 'channels':
         channels(args)
     else:
-        print(args)
         if args.body == [] and not args.post:
             view_post(args)
         elif args.all is True or args.server is True:

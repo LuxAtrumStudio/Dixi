@@ -1,12 +1,26 @@
 import argparse
 import os
 import sys
+import subprocess
+import signal
+import json
 
 import dixi.config
 import dixi.user
 import dixi.channel
 import dixi.view
 from dixi.output import error
+
+def run_watcher(args):
+    if args.kill is True:
+        pid = dixi.config.get('pid')
+        if pid:
+            os.kill(pid, signal.SIGTERM)
+            dixi.config.set('pid', None)
+    else:
+        pid = subprocess.Popen([os.path.dirname(os.path.realpath(__file__)) + '/watcher.py', str(args.color), dixi.config.get('addr'), json.dumps(dixi.config.get('cookies')), args.channel, str(args.age), str(args.delay)]).pid
+        dixi.config.set('pid', pid)
+
 
 def set_default_subparser(self, name, args=None):
     """default subparser selection. Call after setup, just before parse_args()
@@ -103,6 +117,14 @@ def main():
     config.add_argument('--addr', help='Default host address')
     config.add_argument('--no-color', action='store_false', dest='color', help='Disable color in output')
 
+    # >>>>>>>>>> WATCHER <<<<<<<<<< #
+    watcher = subparser.add_parser('watcher', help='Watches for update')
+    watcher.add_argument('channel', nargs='?', default='', help='Channel to watch')
+    watcher.add_argument('age', nargs='?', default=8640, type=int, help='Number of seconds to keep the watcher for')
+    watcher.add_argument('delay', nargs='?', default=30, type=int, help='Number of seconds between checks')
+    watcher.add_argument('--kill', action='store_true', help='Kills any currently running watchers')
+    watcher.add_argument('--no-color', action='store_false', dest='color', help='Disable color in output')
+
     parser.set_default_subparser('view')
     args = parser.parse_args()
     if args.command != 'config' and not dixi.config.exists('addr'):
@@ -116,3 +138,5 @@ def main():
         dixi.view.main(args)
     elif args.command == 'config':
         dixi.config.main(args)
+    elif args.command == 'watcher':
+        run_watcher(args)
