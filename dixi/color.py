@@ -40,13 +40,14 @@ def get_rgb(color):
     green = 0
     blue = 0
     if color < 232:
-        for r in range(5):
-            for g in range(5):
-                for b in range(5):
+        for r in range(6):
+            for g in range(6):
+                for b in range(6):
                     if color == (36 * r) + (6 * g) + b + 16:
                         red = r / 5
                         green = g / 5
                         blue = b / 5
+                        return (red, green, blue)
     else:
         color = color - 231
         red = (10 * color / 256)
@@ -65,7 +66,7 @@ def get_color_int(color, access, background):
         else:
             return ("\033[{}m".format(color + 92) if background else "\033[{}m".format(color + 82))
     else:
-        base_8 = [(0,0,0), (0.5, 0,0), (0,0.5,0), (0.5, 0.5, 0), (0, 0, 0.5), (0.5, 0, 0.5), (0, 0.5, 0.5), (0.75, 0.75, 0.75)];
+        base_8 = [(0, 0, 0), (0.5, 0,0), (0,0.5,0), (0.5, 0.5, 0), (0, 0, 0.5), (0.5, 0, 0.5), (0, 0.5, 0.5), (0.75, 0.75, 0.75)];
         base_light = [(0.5, 0.5, 0.5), (1, 0, 0), (0, 1, 0), (1, 1, 0), (0, 0, 1), (1, 0, 1), (0, 1, 1), (1, 1, 1)];
         r, g, b = get_rgb(color)
         if access == Access.COLOR_8:
