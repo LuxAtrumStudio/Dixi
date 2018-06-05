@@ -69,7 +69,7 @@ app.use(function(err, req, res, next) {
   res.json({error: err.status || 500, message: err.message})
 });
 
-var mongoDB = 'mongodb://root:' + process.env.DB_SECRETE + '@ds239930.mlab.com:39930/dixi';
+var mongoDB = 'mongodb://root:' + process.env.DB_SECRET + '@ds239930.mlab.com:39930/dixi';
 mongoose.connect(mongoDB);
 mongoose.Promise = global.Promise;
 var db = mongoose.connection;
