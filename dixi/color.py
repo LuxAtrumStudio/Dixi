@@ -22,6 +22,8 @@ def get_color_ability():
             return Access.COLOR_TRUE
         elif term == 'linux':
             return Access.COLOR_16
+        elif term == 'screen-256color':
+            return Access.COLOR_256
     return Access.COLOR_16
 
 def clamp(color, minn, maxn):
@@ -64,9 +66,9 @@ def get_color_int(color, access, background):
             return ("\033[{}m".format(color + 92) if background else "\033[{}m".format(color + 82))
     else:
         base_8 = [(0,0,0), (0.5, 0,0), (0,0.5,0), (0.5, 0.5, 0), (0, 0, 0.5), (0.5, 0, 0.5), (0, 0.5, 0.5), (0.75, 0.75, 0.75)];
-        base_light = [(0.5, 0.5, 0.5), (1, 0, 0), (0, 1, 0), (1, 1, 0), (0, 0, 1), (1, 0, 1) (0, 1, 1), (1, 1, 1)];
+        base_light = [(0.5, 0.5, 0.5), (1, 0, 0), (0, 1, 0), (1, 1, 0), (0, 0, 1), (1, 0, 1), (0, 1, 1), (1, 1, 1)];
+        r, g, b = get_rgb(color)
         if access == Access.COLOR_8:
-            r, g, b = get_rgb(color)
             color = base_8.index(min(base_8, key=lambda x: abs(x[0]-r) + abs(x[1]-g) + abs(x[2] - b)));
             return ("\033[{}m".format(color + 40) if background else "\033[{}m".format(color + 30))
         elif access == Access.COLOR_16:
