@@ -1,3 +1,0 @@
-[console_scripts]
-dixi = dixi.dixi:main
-

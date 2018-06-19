@@ -107,6 +107,7 @@ def load_posts():
         else:
             POSTS[key] = value
     load_channel()
+    load_user()
     dixi.config.set('update', update)
 
 def load_menu():
