@@ -17,7 +17,10 @@ def register(args):
         error('Passwords do not match', args.color)
         sys.exit(1)
     action('Registering User {}'.format(args.name), args.color)
-    response = requests.post('http://{}/users/register'.format(dixi.config.get('addr')), data={'name': args.name, 'email': args.email, 'password': args.password, 'password2': args.password2}).json()
+    try:
+        response = requests.post('http://{}/users/register'.format(dixi.config.get('addr')), data={'name': args.name, 'email': args.email, 'password': args.password, 'password2': args.password2}).json()
+    except:
+        response = {'error': "HTTP error"}
     if 'error' in response:
         error(response['error'], args.color)
         sys.exit(2)
@@ -31,7 +34,10 @@ def login(args):
     while args.password is None or args.password is str():
         args.password= prompt_secure('Password','', args.color)
     action('Logging in {}'.format(args.name), args.color)
-    response = requests.post('http://{}/users/login'.format(dixi.config.get('addr')), data={'username': args.name, 'password': args.password})
+    try:
+        response = requests.post('http://{}/users/login'.format(dixi.config.get('addr')), data={'username': args.name, 'password': args.password})
+    except:
+        response = {'error': "HTTP error"}
     if 'success' in response.json():
         success('Logged in {}'.format(args.name), args.color)
         dixi.config.set('cookies', dict(response.cookies))
@@ -45,10 +51,13 @@ def logout(args):
 def delete(args):
     if not action('Delete User {}'.format(args.name if args.name else 'Current'), args.color, True):
         sys.exit(0)
-    if args.name:
-        response = requests.post('http://{}/users/delete'.format(dixi.config.get('addr')), data={'name': args.name}, cookies=dixi.config.get('cookies')).json()
-    else:
-        response = requests.get('http://{}/users/delete'.format(dixi.config.get('addr')), cookies=dixi.config.get('cookies')).json()
+    try:
+        if args.name:
+                response = requests.post('http://{}/users/delete'.format(dixi.config.get('addr')), data={'name': args.name}, cookies=dixi.config.get('cookies')).json()
+        else:
+            response = requests.get('http://{}/users/delete'.format(dixi.config.get('addr')), cookies=dixi.config.get('cookies')).json()
+    except:
+        response = {'error': 'HTTP error'}
     if 'error' in response:
         error(response['error'], args.color)
         sys.exit(9)
