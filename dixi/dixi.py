@@ -63,6 +63,38 @@ def clear_term():
         print('\033[2K')
     print('\033[H', end='')
 
+def resize_pannels():
+    global PANNELS
+    global rows, columns
+    global current_channel
+    trows, tcolumns = os.popen("stty size", "r").read().split()
+    trows = int(trows)
+    tcolumns = int(tcolumns)
+    if trows != rows or tcolumns != columns:
+        rows = trows
+        columns = tcolumns
+    else:
+        return
+    clear_term()
+    PANNELS['menu']['pannel'].resize((3, columns - 2))
+    PANNELS['menu']['pannel'].move((1,1))
+    PANNELS['channels']['pannel'].resize(((rows - 5) // 2, 15))
+    PANNELS['channels']['pannel'].move((4,1))
+    PANNELS['users']['pannel'].resize(((rows - 5) // 2, 15))
+    PANNELS['users']['pannel'].move((4 + ((rows - 5) // 2),1))
+    PANNELS['main']['pannel'].resize((rows - 2 - 3- 7, columns - 2 - 15))
+    PANNELS['main']['pannel'].move((4, 16))
+    PANNELS['main']['pannel'].resize((rows - 2 - 3- 7, columns - 2 - 15))
+    PANNELS['main']['pannel'].move((4, 16))
+    PANNELS['entry']['pannel'].resize((7, columns - 2 - 15))
+    PANNELS['entry']['pannel'].move((rows - 8, 16))
+    for key, val in PANNELS.items():
+        val['pannel'].init = True
+        val['pannel'].render()
+    current_channel = -1
+    display_channel()
+
+
 def close():
     clear_term()
     dixi.config.set('update')
@@ -349,6 +381,7 @@ def main():
     PANNELS['channels']['pannel'].scroll = 1
     load()
     while True:
+        resize_pannels()
         display_channel()
         for key, val in PANNELS.items():
             val['pannel'].render()
