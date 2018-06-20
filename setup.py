@@ -21,7 +21,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='Dixi-cli',
+    name='Dixi',
     version='1.0',
     description='Light weight chat client',
     long_description=long_description,
@@ -39,8 +39,8 @@ setup(
     ],
     keywords='setuptools development',
     #  packages=find_packages(exclude=['docs', 'tests']),
-    packages=['DixiCli'],
-    package_dir={'DixiCli': 'dixi'},
+    packages=['dixi'],
     entry_points={
-        'console_scripts': ['dixi= dixi.dixi:main']
+        'console_scripts': ['dixi-cli = dixi.dixicli:main',
+            "dixi-tui = dixi.dixitui:main"]
     },)

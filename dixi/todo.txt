@@ -1,0 +1,11 @@
+dixi-cli X X
+config   X X
+input    X X
+output   X X
+channel  X X
+markdown X X
+pannel   X X
+rand     X X
+color    X X
+user     X X
+view

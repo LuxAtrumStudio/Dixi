@@ -1,8 +1,22 @@
+import os
 import sys
 import json
 import requests
 import dixi.config
-from dixi.output import *
+import dixi.markdown
+from dixi.input import getch, timeout
+from dixi.pannel import Pannel
+from dixi.output import prompt, prompt_secure, action, error, warning, success, print_channel, print_message, print_user, print_set
+
+def gen_card(name, lines):
+    rows, columns = os.popen("stty size", "r").read().split()
+    rows = int(rows)
+    columns = int(columns)
+    lines += 2
+    card = Pannel('\033[1m{}\033[0m'.format(name), (lines, columns // 4), ((rows - lines) // 2, (columns - (columns // 4)) // 2))
+    card.clear(True)
+    card.render()
+    return card
 
 def channels(args):
     action('Getting Channel List', args.color)
@@ -99,6 +113,62 @@ def post_admin(args):
     success('Posted message to all channels'.format(args.channel), args.color)
     print_message(response, len(response['author']), args.color)
 
+
+def posts(color, update):
+    if not update:
+        try:
+            content= requests.get("http://{}/".format(dixi.config.get('addr')), cookies=dixi.config.get('cookies')).json()
+        except:
+            return {}, {}, None
+    else:
+        try:
+            content = requests.get("http://{}/".format(dixi.config.get('addr')), params={'update': update}, cookies=dixi.config.get('cookies')).json()
+        except:
+            return {}, {}, None
+    posts = {}
+    if 'error' in content:
+        return {}, {}, None
+    for key, value in content.items():
+        if key != 'users' and key != 'update':
+            posts[key] = value
+    return posts, content['users'], content['update']
+
+def post_message(color, message, channel):
+    if message == str():
+        return
+    if channel is None:
+        card = gen_card('Post', 1)
+        error(card, 'must be logged in to post', color)
+        timeout(dixi.config.get('timeout'))
+        return
+    render = dixi.markdown.render(message, 80, color)
+    if dixi.config.get('post-prompt') == True:
+        card = gen_card('Post', len(render.split('\n')) + 2)
+        card.print(render)
+        if action(card, 'Post message to {}'.format(channel), True, color):
+            try:
+                response = requests.post('http://{}/{}/post'.format(dixi.config.get('addr'), channel), cookies=dixi.config.get('cookies'), data={'message': message}).json()
+            except:
+                response = {'error': 'Invalid url'}
+            if 'error' in response:
+                error(card, response['error'], color)
+                timeout(dixi.config.get('timeout'))
+                return False
+            success(card, 'Posted message', color)
+            timeout(dixi.config.get('timeout'))
+            return True
+        warning(card, 'Not Posting message', color)
+        timeout(dixi.config.get('timeout'))
+        return False
+    else:
+        try:
+            response = requests.post('http://{}/{}/post'.format(dixi.config.get('addr'), channel), cookies=dixi.config.get('cookies'), data={'message': message}).json()
+        except:
+            return False
+        if 'error' in response:
+            return False
+        else:
+            return True
 
 
 def main(args):

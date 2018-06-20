@@ -1,8 +1,21 @@
 import os
 import sys
 import json
+from dixi.pannel import Pannel
+from dixi.input import timeout
+from dixi.output import *
 
 CONFIG = dict()
+
+def gen_card(name, lines):
+    rows, columns = os.popen("stty size", "r").read().split()
+    rows = int(rows)
+    columns = int(columns)
+    lines += 2
+    card = Pannel('\033[1m{}\033[0m'.format(name), (lines, columns // 4), ((rows - lines) // 2, (columns - (columns // 4)) // 2))
+    card.clear(True)
+    card.render()
+    return card
 
 def load_config():
     global CONFIG
@@ -55,6 +68,28 @@ def set(name, value=None):
     load_config()
     CONFIG[name] = value
     save_config()
+
+def addr(color):
+    card = gen_card('Address', 5)
+    addr = str()
+    addr = prompt('Address', '', color, card)
+    set_color = prompt_choices('Color', '', [True, False], color, card)
+    post_prompt = prompt_choices('Post Prompt', '', [True, False], color, card)
+    timeout_time = prompt_choices('Pause Delay', '', [-1, 0, 1, 2, 3, 4, 5], color, card)
+    if addr and addr != str():
+        set('addr', addr)
+    if set_color is not None:
+        set('color', set_color)
+    if post_prompt is not None:
+        set('post-prompt', post_prompt)
+    if timeout_time is not None:
+        if timeout_time == -1:
+            timeout_time = 0
+        elif timeout_time == 0:
+            timeout_time = 0.005
+        set('timeout', timeout_time)
+    success('Set Dixi configuration', color, card)
+    timeout(get('timeout'))
 
 def main(args):
     if args.addr:
