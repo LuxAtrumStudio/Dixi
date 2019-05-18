@@ -9,7 +9,7 @@ var os = require('os');
 
 var mongoose = require('mongoose');
 
-var session = require('express-session');
+var session = require('cookie-session');
 var passport = require('passport');
 
 var schedule = require('node-schedule');
@@ -34,10 +34,10 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(session({
-  secret: 'keyboard cat',
+  name: 'session',
+  secret: 'session-secret-key',
   resave: false,
   saveUninitialized: true,
-  channel: null,
 }));
 
 app.use(formParser.parse({uploadDir: os.tmpdir(), autoClean: true}));
@@ -69,7 +69,7 @@ app.use(function(err, req, res, next) {
   res.json({error: err.status || 500, message: err.message})
 });
 
-var mongoDB = 'mongodb://localhost/dixi';
+var mongoDB = 'mongodb://root:' + process.env.DB_SECRET + '@ds239930.mlab.com:39930/dixi';
 mongoose.connect(mongoDB);
 mongoose.Promise = global.Promise;
 var db = mongoose.connection;
